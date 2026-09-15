@@ -1,0 +1,156 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  PLAYER
+}
+
+enum UserStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum GameStatus {
+  ACTIVE
+  COMPLETED
+}
+
+enum TransactionType {
+  BUY_IN
+  REBUY
+  CASH_OUT
+}
+
+model User {
+  id           String     @id @default(cuid())
+  email        String     @unique
+  passwordHash String
+  displayName  String
+  avatarUrl    String?
+  role         Role       @default(PLAYER)
+  status       UserStatus @default(PENDING)
+  createdAt    DateTime   @default(now())
+
+  chipSets         ChipSet[]
+  createdGuests    Guest[]           @relation("GuestCreator")
+  gamesCreated     Game[]
+  gameParticipants GameParticipant[]
+
+  // Friendship is stored as a directional row in both directions when created,
+  // so "my friends" is always a simple where friendOfId == me.
+  friendsOf Friendship[] @relation("FriendOwner")
+  friendOf  Friendship[] @relation("FriendTarget")
+
+  @@index([status])
+}
+
+model Friendship {
+  id        String   @id @default(cuid())
+  ownerId   String
+  friendId  String
+  createdAt DateTime @default(now())
+
+  owner  User @relation("FriendOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  friend User @relation("FriendTarget", fields: [friendId], references: [id], onDelete: Cascade)
+
+  @@unique([ownerId, friendId])
+  @@index([friendId])
+}
+
+model Guest {
+  id             String   @id @default(cuid())
+  name           String
+  createdById    String
+  mergedIntoId   String?
+  createdAt      DateTime @default(now())
+
+  createdBy        User              @relation("GuestCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  gameParticipants GameParticipant[]
+
+  @@index([createdById])
+}
+
+model ChipSet {
+  id        String   @id @default(cuid())
+  ownerId   String
+  name      String
+  createdAt DateTime @default(now())
+
+  owner        User               @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  denominations ChipDenomination[]
+  games        Game[]
+
+  @@index([ownerId])
+}
+
+model ChipDenomination {
+  id        String  @id @default(cuid())
+  chipSetId String
+  value     Decimal @db.Decimal(10, 2)
+  quantity  Int
+
+  chipSet ChipSet @relation(fields: [chipSetId], references: [id], onDelete: Cascade)
+
+  @@unique([chipSetId, value])
+}
+
+model Game {
+  id            String     @id @default(cuid())
+  creatorId     String
+  chipSetId     String?
+  buyInAmount   Decimal    @db.Decimal(10, 2)
+  status        GameStatus @default(ACTIVE)
+  chipPlan      Json?
+  startedAt     DateTime   @default(now())
+  endedAt       DateTime?
+
+  creator      User              @relation(fields: [creatorId], references: [id], onDelete: Restrict)
+  chipSet      ChipSet?          @relation(fields: [chipSetId], references: [id], onDelete: SetNull)
+  participants GameParticipant[]
+
+  @@index([creatorId])
+  @@index([status])
+}
+
+model GameParticipant {
+  id             String    @id @default(cuid())
+  gameId         String
+  userId         String?
+  guestId        String?
+  totalBoughtIn  Decimal   @default(0) @db.Decimal(10, 2)
+  totalCashedOut Decimal?  @db.Decimal(10, 2)
+  joinedAt       DateTime  @default(now())
+  leftAt         DateTime?
+
+  game         Game          @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  user         User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  guest        Guest?        @relation(fields: [guestId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+
+  @@index([gameId])
+  @@index([userId])
+  @@index([guestId])
+}
+
+model Transaction {
+  id            String          @id @default(cuid())
+  participantId String
+  type          TransactionType
+  amount        Decimal         @db.Decimal(10, 2)
+  createdAt     DateTime        @default(now())
+
+  participant GameParticipant @relation(fields: [participantId], references: [id], onDelete: Cascade)
+
+  @@index([participantId])
+}

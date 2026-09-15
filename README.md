@@ -1,36 +1,54 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Poker Home Games
 
-## Getting Started
+A tracker for home poker games: accounts with admin approval, friends, guest
+players, chip-set-aware buy-in calculation, live session tracking, and a
+leaderboard.
 
-First, run the development server:
+## Stack
+
+- Next.js 16 (App Router, Turbopack)
+- Postgres via Docker Compose (local dev), Prisma 7 as the ORM
+- NextAuth (Auth.js) v5 with a credentials (email/password) provider
+
+## First-time setup
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+docker compose up -d       # starts Postgres on localhost:5433
+npm run db:seed            # creates the first admin account
+npm run dev                # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The seed script creates an admin user from these env vars (with fallbacks
+baked in for local dev):
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+ADMIN_EMAIL=you@example.com ADMIN_PASSWORD=yourpassword ADMIN_NAME="Your Name" npm run db:seed
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+If you don't pass them, it defaults to `andikurtiqi@gmail.com` /
+`changeme123` — log in and change the password by re-running the seed with a
+real password once auth includes account settings (not built yet).
 
-## Learn More
+## Database
 
-To learn more about Next.js, take a look at the following resources:
+- `docker compose up -d` — start local Postgres (data persists in a Docker volume)
+- `npx prisma migrate dev --name <description>` — create + apply a migration after editing `prisma/schema.prisma`
+- `npm run db:studio` — Prisma Studio, a GUI for browsing/editing tables
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Postgres runs on port **5433** (not 5432), since this machine already has a
+Homebrew Postgres service bound to 5432.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## How accounts work
 
-## Deploy on Vercel
+1. Anyone can request an account at `/signup` (email/password) — it's created with `PENDING` status.
+2. An admin reviews requests at `/admin/requests` and approves or rejects.
+3. Only `APPROVED` users can access the app; `PENDING` users are shown a waiting page.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Current state
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This is the foundation: auth + admin approval are fully wired up. Friends,
+games (chip-set calculator, live buy-in/rebuy/cashout tracking), and the
+leaderboard are scaffolded as placeholder pages/nav links and still need to
+be built out — the data model for all of it already exists in
+`prisma/schema.prisma`.
