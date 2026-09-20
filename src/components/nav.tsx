@@ -39,16 +39,28 @@ export function Nav({
           </Link>
         ))}
         {isAdmin && (
-          <Link
-            href="/admin/requests"
-            className={
-              pathname.startsWith("/admin")
-                ? "text-sm font-medium underline"
-                : "text-sm font-medium text-black/60 hover:text-black dark:text-white/60 dark:hover:text-white"
-            }
-          >
-            Admin
-          </Link>
+          <>
+            <Link
+              href="/admin/requests"
+              className={
+                pathname === "/admin/requests"
+                  ? "text-sm font-medium underline"
+                  : "text-sm font-medium text-black/60 hover:text-black dark:text-white/60 dark:hover:text-white"
+              }
+            >
+              Requests
+            </Link>
+            <Link
+              href="/admin/guests"
+              className={
+                pathname === "/admin/guests"
+                  ? "text-sm font-medium underline"
+                  : "text-sm font-medium text-black/60 hover:text-black dark:text-white/60 dark:hover:text-white"
+              }
+            >
+              Merge Guests
+            </Link>
+          </>
         )}
       </div>
       <div className="flex items-center gap-4">
