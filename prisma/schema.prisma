@@ -138,6 +138,8 @@ model GameParticipant {
   guest        Guest?        @relation(fields: [guestId], references: [id], onDelete: Cascade)
   transactions Transaction[]
 
+  @@unique([gameId, userId])
+  @@unique([gameId, guestId])
   @@index([gameId])
   @@index([userId])
   @@index([guestId])

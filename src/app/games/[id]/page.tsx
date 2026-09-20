@@ -6,6 +6,7 @@ import { formatUSD, centsToDollars } from "@/lib/money";
 import { ParticipantRow } from "@/components/participant-row";
 import { CloseGameButton } from "@/components/close-game-button";
 import { JoinGameButton } from "@/components/join-game-button";
+import { AddPlayerControl } from "@/components/add-player-control";
 import type { ChipPlan } from "@/lib/chip-plan";
 
 export default async function GameDetailPage({
@@ -96,6 +97,10 @@ export default async function GameDetailPage({
           </div>
         ))}
       </div>
+
+      {isCreator && game.status === "ACTIVE" && (
+        <AddPlayerControl gameId={game.id} defaultAmount={Number(game.buyInAmount)} />
+      )}
 
       <div className="flex justify-between text-sm text-black/60 dark:text-white/60">
         <span>Total bought in: {formatUSD(totalBoughtIn)}</span>
