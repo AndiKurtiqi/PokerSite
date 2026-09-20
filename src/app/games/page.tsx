@@ -1,14 +1,10 @@
 import Link from "next/link";
-import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { formatUSD } from "@/lib/money";
 
 export default async function GamesPage() {
-  const session = await auth();
-
   const games = await prisma.game.findMany({
-    where: { creatorId: session!.user.id },
-    include: { participants: true },
+    include: { participants: true, creator: { select: { displayName: true } } },
     orderBy: { startedAt: "desc" },
   });
 
@@ -40,7 +36,10 @@ export default async function GamesPage() {
               href={`/games/${g.id}`}
               className="flex items-center justify-between rounded border border-black/10 p-4 hover:bg-black/5 dark:border-white/10 dark:hover:bg-white/5"
             >
-              <span>{formatUSD(Number(g.buyInAmount))} buy-in · {g.participants.length} players</span>
+              <span>
+                {formatUSD(Number(g.buyInAmount))} buy-in · {g.participants.length} players ·
+                banked by {g.creator.displayName}
+              </span>
               <span className="text-sm text-black/60 dark:text-white/60">
                 {g.startedAt.toLocaleDateString()}
               </span>
@@ -62,7 +61,10 @@ export default async function GamesPage() {
               href={`/games/${g.id}`}
               className="flex items-center justify-between rounded border border-black/10 p-4 hover:bg-black/5 dark:border-white/10 dark:hover:bg-white/5"
             >
-              <span>{formatUSD(Number(g.buyInAmount))} buy-in · {g.participants.length} players</span>
+              <span>
+                {formatUSD(Number(g.buyInAmount))} buy-in · {g.participants.length} players ·
+                banked by {g.creator.displayName}
+              </span>
               <span className="text-sm text-black/60 dark:text-white/60">
                 {g.startedAt.toLocaleDateString()}
               </span>

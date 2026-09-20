@@ -1,10 +1,11 @@
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import Link from "next/link";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { formatUSD, centsToDollars } from "@/lib/money";
 import { ParticipantRow } from "@/components/participant-row";
 import { CloseGameButton } from "@/components/close-game-button";
+import { JoinGameButton } from "@/components/join-game-button";
 import type { ChipPlan } from "@/lib/chip-plan";
 
 export default async function GameDetailPage({
@@ -18,6 +19,7 @@ export default async function GameDetailPage({
   const game = await prisma.game.findUnique({
     where: { id },
     include: {
+      creator: { select: { displayName: true } },
       participants: {
         include: { user: true, guest: true },
         orderBy: { joinedAt: "asc" },
@@ -27,8 +29,9 @@ export default async function GameDetailPage({
   });
 
   if (!game) notFound();
-  if (game.creatorId !== session!.user.id) redirect("/games");
 
+  const isCreator = game.creatorId === session!.user.id;
+  const isParticipant = game.participants.some((p) => p.userId === session!.user.id);
   const chipPlan = game.chipPlan as unknown as ChipPlan | null;
 
   const totalBoughtIn = game.participants.reduce((sum, p) => sum + Number(p.totalBoughtIn), 0);
@@ -47,11 +50,16 @@ export default async function GameDetailPage({
             {formatUSD(Number(game.buyInAmount))} buy-in
           </h1>
           <p className="text-sm text-black/60 dark:text-white/60">
-            {game.status === "ACTIVE" ? "In progress" : "Completed"} · started{" "}
-            {game.startedAt.toLocaleString()}
+            {game.status === "ACTIVE" ? "In progress" : "Completed"} · banked by{" "}
+            {game.creator.displayName} · started {game.startedAt.toLocaleString()}
           </p>
         </div>
-        {game.status === "ACTIVE" && <CloseGameButton gameId={game.id} />}
+        <div className="flex flex-col items-end gap-2">
+          {game.status === "ACTIVE" && !isParticipant && (
+            <JoinGameButton gameId={game.id} defaultAmount={Number(game.buyInAmount)} />
+          )}
+          {game.status === "ACTIVE" && isCreator && <CloseGameButton gameId={game.id} />}
+        </div>
       </div>
 
       {chipPlan && chipPlan.perPlayer.length > 0 && (
@@ -83,7 +91,7 @@ export default async function GameDetailPage({
               name={p.user?.displayName ?? p.guest?.name ?? "Unknown"}
               totalBoughtIn={Number(p.totalBoughtIn)}
               totalCashedOut={p.totalCashedOut !== null ? Number(p.totalCashedOut) : null}
-              canEdit={game.status === "ACTIVE"}
+              canEdit={isCreator && game.status === "ACTIVE"}
             />
           </div>
         ))}
