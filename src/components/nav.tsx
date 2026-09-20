@@ -52,9 +52,12 @@ export function Nav({
         )}
       </div>
       <div className="flex items-center gap-4">
-        <span className="text-sm text-black/60 dark:text-white/60">
+        <Link
+          href="/settings"
+          className="text-sm text-black/60 hover:text-black dark:text-white/60 dark:hover:text-white"
+        >
           {displayName}
-        </span>
+        </Link>
         <button
           onClick={() => signOut({ redirectTo: "/login" })}
           className="text-sm underline"

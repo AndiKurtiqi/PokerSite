@@ -1,17 +1,24 @@
 import { auth } from "@/auth";
+import { getLeaderboardRows } from "@/lib/get-leaderboard-rows";
+import { LeaderboardTable } from "@/components/leaderboard-table";
 
 export default async function DashboardPage() {
   const session = await auth();
+  const rows = await getLeaderboardRows();
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 px-6 py-10">
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-6 py-10">
       <h1 className="text-2xl font-semibold">
         Welcome, {session?.user.name}
       </h1>
-      <p className="text-sm text-black/60 dark:text-white/60">
-        This is a placeholder dashboard. Friends, games, and the leaderboard
-        will live behind their own nav links as they&apos;re built out.
-      </p>
+      {rows.length === 0 ? (
+        <p className="text-sm text-black/60 dark:text-white/60">
+          No completed games yet — the leaderboard fills in once games are
+          closed out.
+        </p>
+      ) : (
+        <LeaderboardTable rows={rows} />
+      )}
     </div>
   );
 }

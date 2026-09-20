@@ -1,23 +1,8 @@
-import { prisma } from "@/lib/prisma";
-import { computeLeaderboard, type SessionResult } from "@/lib/leaderboard";
+import { getLeaderboardRows } from "@/lib/get-leaderboard-rows";
 import { LeaderboardTable } from "@/components/leaderboard-table";
 
 export default async function LeaderboardPage() {
-  const participants = await prisma.gameParticipant.findMany({
-    where: { game: { status: "COMPLETED" }, totalCashedOut: { not: null } },
-    include: { user: true, guest: true, game: true },
-  });
-
-  const sessions: SessionResult[] = participants.map((p) => ({
-    key: p.userId ? `user:${p.userId}` : `guest:${p.guestId}`,
-    displayName: p.user?.displayName ?? p.guest?.name ?? "Unknown",
-    isGuest: p.guestId !== null,
-    boughtIn: Number(p.totalBoughtIn),
-    cashedOut: Number(p.totalCashedOut),
-    endedAt: p.game.endedAt ?? p.game.startedAt,
-  }));
-
-  const rows = computeLeaderboard(sessions);
+  const rows = await getLeaderboardRows();
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-6 py-10">
