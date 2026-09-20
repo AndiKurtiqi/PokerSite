@@ -28,9 +28,13 @@ export function ParticipantRow({
   const net = totalCashedOut !== null ? totalCashedOut - totalBoughtIn : null;
 
   async function submit(type: "REBUY" | "CASH_OUT") {
+    if (amount.trim() === "") {
+      setError("Enter an amount.");
+      return;
+    }
     const value = Number(amount);
-    if (!value || value <= 0) {
-      setError("Enter a positive amount.");
+    if (Number.isNaN(value) || value < 0 || (type === "REBUY" && value === 0)) {
+      setError(type === "REBUY" ? "Enter a positive amount." : "Enter an amount of 0 or more.");
       return;
     }
     setLoading(true);
@@ -99,7 +103,7 @@ export function ParticipantRow({
           <input
             type="number"
             step="0.01"
-            min="0.01"
+            min={mode === "rebuy" ? "0.01" : "0"}
             autoFocus
             value={amount}
             onChange={(e) => setAmount(e.target.value)}

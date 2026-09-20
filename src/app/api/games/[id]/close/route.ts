@@ -1,6 +1,13 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+
+const schema = z.object({
+  cashouts: z
+    .array(z.object({ participantId: z.string().min(1), amount: z.number().nonnegative() }))
+    .min(1),
+});
 
 export async function POST(
   request: Request,
@@ -13,7 +20,7 @@ export async function POST(
 
   const game = await prisma.game.findUnique({
     where: { id: gameId },
-    include: { participants: { include: { user: true, guest: true } } },
+    include: { participants: true },
   });
   if (!game) return NextResponse.json({ error: "Game not found" }, { status: 404 });
   if (game.creatorId !== session.user.id) {
@@ -23,32 +30,51 @@ export async function POST(
     return NextResponse.json({ error: "Game is already closed" }, { status: 400 });
   }
 
-  const missingCashout = game.participants.filter((p) => p.totalCashedOut === null);
-  if (missingCashout.length > 0) {
-    const names = missingCashout.map((p) => p.user?.displayName ?? p.guest?.name ?? "Unknown");
+  const body = await request.json();
+  const parsed = schema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Invalid input" }, { status: 400 });
+  }
+  const { cashouts } = parsed.data;
+
+  const participantIds = new Set(game.participants.map((p) => p.id));
+  if (
+    cashouts.length !== game.participants.length ||
+    !cashouts.every((c) => participantIds.has(c.participantId))
+  ) {
     return NextResponse.json(
-      { error: `Record a cash-out for everyone first: ${names.join(", ")}` },
+      { error: "A cash-out amount is required for every player before closing." },
       { status: 400 }
     );
   }
 
-  const totalBoughtIn = game.participants.reduce((sum, p) => sum + Number(p.totalBoughtIn), 0);
-  const totalCashedOut = game.participants.reduce((sum, p) => sum + Number(p.totalCashedOut), 0);
+  await prisma.$transaction(async (tx) => {
+    for (const c of cashouts) {
+      const participant = game.participants.find((p) => p.id === c.participantId)!;
+      const current = participant.totalCashedOut !== null ? Number(participant.totalCashedOut) : null;
+      if (current !== c.amount) {
+        await tx.transaction.create({
+          data: { participantId: c.participantId, type: "CASH_OUT", amount: c.amount },
+        });
+        await tx.gameParticipant.update({
+          where: { id: c.participantId },
+          data: { totalCashedOut: c.amount, leftAt: new Date() },
+        });
+      }
+    }
 
-  await prisma.game.update({
-    where: { id: gameId },
-    data: { status: "COMPLETED", endedAt: new Date() },
+    await tx.game.update({
+      where: { id: gameId },
+      data: { status: "COMPLETED", endedAt: new Date() },
+    });
   });
 
+  const totalBoughtIn = game.participants.reduce((sum, p) => sum + Number(p.totalBoughtIn), 0);
+  const totalCashedOut = cashouts.reduce((sum, c) => sum + c.amount, 0);
   const diff = Math.round((totalCashedOut - totalBoughtIn) * 100) / 100;
 
   return NextResponse.json({
     ok: true,
-    reconciliation: {
-      totalBoughtIn,
-      totalCashedOut,
-      diff,
-      balanced: diff === 0,
-    },
+    reconciliation: { totalBoughtIn, totalCashedOut, diff, balanced: diff === 0 },
   });
 }

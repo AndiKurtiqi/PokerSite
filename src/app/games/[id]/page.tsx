@@ -59,7 +59,17 @@ export default async function GameDetailPage({
           {game.status === "ACTIVE" && !isParticipant && (
             <JoinGameButton gameId={game.id} defaultAmount={Number(game.buyInAmount)} />
           )}
-          {game.status === "ACTIVE" && isCreator && <CloseGameButton gameId={game.id} />}
+          {game.status === "ACTIVE" && isCreator && (
+            <CloseGameButton
+              gameId={game.id}
+              participants={game.participants.map((p) => ({
+                id: p.id,
+                name: p.user?.displayName ?? p.guest?.name ?? "Unknown",
+                totalBoughtIn: Number(p.totalBoughtIn),
+                totalCashedOut: p.totalCashedOut !== null ? Number(p.totalCashedOut) : null,
+              }))}
+            />
+          )}
         </div>
       </div>
 

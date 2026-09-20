@@ -3,10 +3,15 @@ import { z } from "zod";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 
-const schema = z.object({
-  type: z.enum(["REBUY", "CASH_OUT"]),
-  amount: z.number().positive(),
-});
+const schema = z
+  .object({
+    type: z.enum(["REBUY", "CASH_OUT"]),
+    amount: z.number().nonnegative(),
+  })
+  .refine((data) => data.type !== "REBUY" || data.amount > 0, {
+    message: "Rebuy amount must be greater than zero",
+    path: ["amount"],
+  });
 
 export async function POST(
   request: Request,
