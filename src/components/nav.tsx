@@ -60,6 +60,16 @@ export function Nav({
             >
               Merge Guests
             </Link>
+            <Link
+              href="/admin/users"
+              className={
+                pathname === "/admin/users"
+                  ? "text-sm font-medium underline"
+                  : "text-sm font-medium text-black/60 hover:text-black dark:text-white/60 dark:hover:text-white"
+              }
+            >
+              Accounts
+            </Link>
           </>
         )}
       </div>

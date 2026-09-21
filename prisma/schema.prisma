@@ -19,6 +19,7 @@ enum UserStatus {
   PENDING
   APPROVED
   REJECTED
+  DISABLED
 }
 
 enum GameStatus {
