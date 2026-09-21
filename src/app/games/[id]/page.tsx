@@ -7,6 +7,7 @@ import { ParticipantRow } from "@/components/participant-row";
 import { CloseGameButton } from "@/components/close-game-button";
 import { JoinGameButton } from "@/components/join-game-button";
 import { AddPlayerControl } from "@/components/add-player-control";
+import { MAX_PLAYERS_PER_TABLE } from "@/lib/tables";
 import type { ChipPlan } from "@/lib/chip-plan";
 
 export default async function GameDetailPage({
@@ -33,12 +34,24 @@ export default async function GameDetailPage({
 
   const isCreator = game.creatorId === session!.user.id;
   const isParticipant = game.participants.some((p) => p.userId === session!.user.id);
+  const canManageTables = isCreator && game.status === "ACTIVE";
   const chipPlan = game.chipPlan as unknown as ChipPlan | null;
 
   const totalBoughtIn = game.participants.reduce((sum, p) => sum + Number(p.totalBoughtIn), 0);
   const cashedOutParticipants = game.participants.filter((p) => p.totalCashedOut !== null);
   const totalCashedOut = cashedOutParticipants.reduce((sum, p) => sum + Number(p.totalCashedOut), 0);
   const allCashedOut = cashedOutParticipants.length === game.participants.length;
+
+  const tableNumbers = game.participants.map((p) => p.tableNumber);
+  const maxTable = tableNumbers.length > 0 ? Math.max(...tableNumbers) : 1;
+  const tableOptions = Array.from({ length: maxTable + 1 }, (_, i) => i + 1);
+  const tables = new Map<number, typeof game.participants>();
+  for (const p of game.participants) {
+    const list = tables.get(p.tableNumber) ?? [];
+    list.push(p);
+    tables.set(p.tableNumber, list);
+  }
+  const sortedTableNumbers = [...tables.keys()].sort((a, b) => a - b);
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-6 py-10">
@@ -93,20 +106,33 @@ export default async function GameDetailPage({
         </div>
       )}
 
-      <div className="rounded border border-black/10 dark:border-white/10">
-        {game.participants.map((p) => (
-          <div key={p.id} className="px-4">
-            <ParticipantRow
-              gameId={game.id}
-              participantId={p.id}
-              name={p.user?.displayName ?? p.guest?.name ?? "Unknown"}
-              totalBoughtIn={Number(p.totalBoughtIn)}
-              totalCashedOut={p.totalCashedOut !== null ? Number(p.totalCashedOut) : null}
-              canEdit={isCreator && game.status === "ACTIVE"}
-            />
+      {sortedTableNumbers.map((tableNumber) => {
+        const participants = tables.get(tableNumber)!;
+        return (
+          <div key={tableNumber} className="flex flex-col gap-2">
+            <h2 className="text-sm font-medium uppercase text-black/50 dark:text-white/50">
+              Table {tableNumber} ({participants.length}/{MAX_PLAYERS_PER_TABLE})
+            </h2>
+            <div className="rounded border border-black/10 dark:border-white/10">
+              {participants.map((p) => (
+                <div key={p.id} className="px-4">
+                  <ParticipantRow
+                    gameId={game.id}
+                    participantId={p.id}
+                    name={p.user?.displayName ?? p.guest?.name ?? "Unknown"}
+                    totalBoughtIn={Number(p.totalBoughtIn)}
+                    totalCashedOut={p.totalCashedOut !== null ? Number(p.totalCashedOut) : null}
+                    canEdit={isCreator && game.status === "ACTIVE"}
+                    tableNumber={p.tableNumber}
+                    tableOptions={tableOptions}
+                    canManageTables={canManageTables}
+                  />
+                </div>
+              ))}
+            </div>
           </div>
-        ))}
-      </div>
+        );
+      })}
 
       {isCreator && game.status === "ACTIVE" && (
         <AddPlayerControl gameId={game.id} defaultAmount={Number(game.buyInAmount)} />

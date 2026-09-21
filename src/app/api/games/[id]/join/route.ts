@@ -3,6 +3,7 @@ import { z } from "zod";
 import { Prisma } from "@/generated/prisma/client";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { getNextAvailableTable } from "@/lib/tables";
 
 const schema = z.object({ amount: z.number().positive() });
 
@@ -34,12 +35,14 @@ export async function POST(
     return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Invalid input" }, { status: 400 });
   }
   const { amount } = parsed.data;
+  const tableNumber = await getNextAvailableTable(gameId);
 
   try {
     const participant = await prisma.gameParticipant.create({
       data: {
         gameId,
         userId: session.user.id,
+        tableNumber,
         totalBoughtIn: amount,
         transactions: { create: { type: "BUY_IN", amount } },
       },

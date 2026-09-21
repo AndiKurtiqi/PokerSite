@@ -3,6 +3,7 @@ import { z } from "zod";
 import { Prisma } from "@/generated/prisma/client";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { getNextAvailableTable } from "@/lib/tables";
 
 const schema = z.object({
   type: z.enum(["user", "guest"]),
@@ -47,12 +48,15 @@ export async function POST(
     }
   }
 
+  const tableNumber = await getNextAvailableTable(gameId);
+
   try {
     const participant = await prisma.gameParticipant.create({
       data: {
         gameId,
         userId: type === "user" ? id : null,
         guestId: type === "guest" ? id : null,
+        tableNumber,
         totalBoughtIn: amount,
         transactions: { create: { type: "BUY_IN", amount } },
       },

@@ -129,6 +129,7 @@ model GameParticipant {
   gameId         String
   userId         String?
   guestId        String?
+  tableNumber    Int       @default(1)
   totalBoughtIn  Decimal   @default(0) @db.Decimal(10, 2)
   totalCashedOut Decimal?  @db.Decimal(10, 2)
   joinedAt       DateTime  @default(now())

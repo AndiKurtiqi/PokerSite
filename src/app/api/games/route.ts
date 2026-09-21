@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { computeChipPlan } from "@/lib/chip-plan";
 import { dollarsToCents } from "@/lib/money";
+import { tableForIndex } from "@/lib/tables";
 
 const schema = z.object({
   buyInAmount: z.number().positive(),
@@ -63,9 +64,10 @@ export async function POST(request: Request) {
       buyInAmount,
       chipPlan: chipPlan ?? undefined,
       participants: {
-        create: players.map((p) => ({
+        create: players.map((p, i) => ({
           userId: p.type === "user" ? p.id : null,
           guestId: p.type === "guest" ? p.id : null,
+          tableNumber: tableForIndex(i),
           totalBoughtIn: buyInAmount,
           transactions: { create: { type: "BUY_IN", amount: buyInAmount } },
         })),
