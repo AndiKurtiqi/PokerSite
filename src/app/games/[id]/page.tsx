@@ -7,6 +7,7 @@ import { ParticipantRow } from "@/components/participant-row";
 import { CloseGameButton } from "@/components/close-game-button";
 import { JoinGameButton } from "@/components/join-game-button";
 import { AddPlayerControl } from "@/components/add-player-control";
+import { DeleteGameButton } from "@/components/delete-game-button";
 import { MAX_PLAYERS_PER_TABLE } from "@/lib/tables";
 import type { ChipPlan } from "@/lib/chip-plan";
 
@@ -33,6 +34,7 @@ export default async function GameDetailPage({
   if (!game) notFound();
 
   const isCreator = game.creatorId === session!.user.id;
+  const isAdmin = session!.user.role === "ADMIN";
   const isParticipant = game.participants.some((p) => p.userId === session!.user.id);
   const canManageTables = isCreator && game.status === "ACTIVE";
   const chipPlan = game.chipPlan as unknown as ChipPlan | null;
@@ -145,6 +147,12 @@ export default async function GameDetailPage({
           {!allCashedOut && ` (${cashedOutParticipants.length}/${game.participants.length} so far)`}
         </span>
       </div>
+
+      {(isCreator || isAdmin) && (
+        <div className="flex justify-end border-t border-black/10 pt-4 dark:border-white/10">
+          <DeleteGameButton gameId={game.id} />
+        </div>
+      )}
     </div>
   );
 }
