@@ -8,16 +8,16 @@ export default async function AdminRequestsPage() {
   });
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-6 py-10">
-      <h1 className="text-2xl font-semibold">Pending requests</h1>
+    <div className="page">
+      <h1 className="page-title">Pending requests</h1>
       {pending.length === 0 ? (
-        <p className="text-sm text-black/60 dark:text-white/60">
+        <p className="text-sm text-muted">
           No pending account requests.
         </p>
       ) : (
         <table className="w-full text-left text-sm">
           <thead>
-            <tr className="border-b border-black/10 dark:border-white/10">
+            <tr className="border-b border-line">
               <th className="py-2 font-medium">Name</th>
               <th className="py-2 font-medium">Email</th>
               <th />

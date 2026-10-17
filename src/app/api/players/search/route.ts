@@ -46,7 +46,8 @@ export async function GET(request: Request) {
     }),
     prisma.guest.findMany({
       where: {
-        createdById: session.user.id,
+        // Guests are a shared pool so every banker finds the same "Mike"
+        // instead of creating a duplicate.
         mergedIntoId: null,
         name: { contains: q, mode: "insensitive" },
       },

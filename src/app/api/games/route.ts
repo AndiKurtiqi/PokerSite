@@ -35,7 +35,7 @@ export async function POST(request: Request) {
       : prisma.user.findMany({ where: { id: { in: userIds }, status: "APPROVED" } }),
     guestIds.length === 0
       ? []
-      : prisma.guest.findMany({ where: { id: { in: guestIds }, createdById: session.user.id } }),
+      : prisma.guest.findMany({ where: { id: { in: guestIds }, mergedIntoId: null } }),
   ]);
 
   if (validUsers.length !== userIds.length || validGuests.length !== guestIds.length) {
@@ -43,12 +43,14 @@ export async function POST(request: Request) {
   }
 
   let chipPlan = null;
+  let ownedChipSetId: string | null = null;
   if (chipSetId) {
     const chipSet = await prisma.chipSet.findFirst({
       where: { id: chipSetId, ownerId: session.user.id },
       include: { denominations: true },
     });
     if (chipSet) {
+      ownedChipSetId = chipSet.id;
       const denominations = chipSet.denominations.map((d) => ({
         valueCents: dollarsToCents(Number(d.value)),
         quantity: d.quantity,
@@ -60,7 +62,7 @@ export async function POST(request: Request) {
   const game = await prisma.game.create({
     data: {
       creatorId: session.user.id,
-      chipSetId: chipSetId ?? null,
+      chipSetId: ownedChipSetId,
       buyInAmount,
       chipPlan: chipPlan ?? undefined,
       participants: {

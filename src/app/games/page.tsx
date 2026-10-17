@@ -12,35 +12,36 @@ export default async function GamesPage() {
   const completed = games.filter((g) => g.status === "COMPLETED");
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-6 py-10">
+    <div className="page gap-8">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Games</h1>
+        <h1 className="page-title">Games</h1>
         <Link
           href="/games/new"
-          className="rounded bg-black px-4 py-2 text-sm text-white dark:bg-white dark:text-black"
+          className="px-4 py-2 text-sm btn-primary"
         >
           New game
         </Link>
       </div>
 
       <section className="flex flex-col gap-3">
-        <h2 className="text-sm font-medium uppercase text-black/50 dark:text-white/50">
+        <h2 className="section-label">
           Active
         </h2>
         {active.length === 0 ? (
-          <p className="text-sm text-black/60 dark:text-white/60">No active games.</p>
+          <p className="text-sm text-muted">No active games.</p>
         ) : (
           active.map((g) => (
             <Link
               key={g.id}
               href={`/games/${g.id}`}
-              className="flex items-center justify-between rounded border border-black/10 p-4 hover:bg-black/5 dark:border-white/10 dark:hover:bg-white/5"
+              className="flex items-center justify-between card p-4 transition-colors hover:border-line-strong hover:bg-surface-raised"
             >
-              <span>
-                {formatUSD(Number(g.buyInAmount))} buy-in · {g.participants.length} players ·
+              <span className="flex items-center gap-2.5">
+                <span aria-hidden className="h-2 w-2 shrink-0 rounded-full bg-success" />
+                {formatUSD(Number(g.buyInAmount))} buy-in · {g.participants.length} player{g.participants.length === 1 ? "" : "s"} ·
                 banked by {g.creator.displayName}
               </span>
-              <span className="text-sm text-black/60 dark:text-white/60">
+              <span className="text-sm text-muted">
                 {g.startedAt.toLocaleDateString()}
               </span>
             </Link>
@@ -49,23 +50,23 @@ export default async function GamesPage() {
       </section>
 
       <section className="flex flex-col gap-3">
-        <h2 className="text-sm font-medium uppercase text-black/50 dark:text-white/50">
+        <h2 className="section-label">
           Completed
         </h2>
         {completed.length === 0 ? (
-          <p className="text-sm text-black/60 dark:text-white/60">No completed games yet.</p>
+          <p className="text-sm text-muted">No completed games yet.</p>
         ) : (
           completed.map((g) => (
             <Link
               key={g.id}
               href={`/games/${g.id}`}
-              className="flex items-center justify-between rounded border border-black/10 p-4 hover:bg-black/5 dark:border-white/10 dark:hover:bg-white/5"
+              className="flex items-center justify-between card p-4 transition-colors hover:border-line-strong hover:bg-surface-raised"
             >
               <span>
-                {formatUSD(Number(g.buyInAmount))} buy-in · {g.participants.length} players ·
+                {formatUSD(Number(g.buyInAmount))} buy-in · {g.participants.length} player{g.participants.length === 1 ? "" : "s"} ·
                 banked by {g.creator.displayName}
               </span>
-              <span className="text-sm text-black/60 dark:text-white/60">
+              <span className="text-sm text-muted">
                 {g.startedAt.toLocaleDateString()}
               </span>
             </Link>

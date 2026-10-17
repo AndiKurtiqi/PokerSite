@@ -8,16 +8,16 @@ export default async function SettingsPage() {
   const user = await prisma.user.findUnique({ where: { id: session!.user.id } });
 
   return (
-    <div className="mx-auto flex w-full max-w-xl flex-col gap-10 px-6 py-10">
+    <div className="page-narrow gap-10">
       <div>
-        <h1 className="text-2xl font-semibold">Account settings</h1>
-        <p className="text-sm text-black/60 dark:text-white/60">
+        <h1 className="page-title">Account settings</h1>
+        <p className="text-sm text-muted">
           Logged in as {user?.email}
         </p>
       </div>
 
       <section className="flex flex-col gap-4">
-        <h2 className="text-lg font-medium">Profile</h2>
+        <h2 className="text-lg font-semibold tracking-tight">Profile</h2>
         <ProfileForm
           initialDisplayName={user?.displayName ?? ""}
           initialAvatarUrl={user?.avatarUrl ?? ""}
@@ -25,7 +25,7 @@ export default async function SettingsPage() {
       </section>
 
       <section className="flex flex-col gap-4">
-        <h2 className="text-lg font-medium">Password</h2>
+        <h2 className="text-lg font-semibold tracking-tight">Password</h2>
         <ChangePasswordForm />
       </section>
     </div>

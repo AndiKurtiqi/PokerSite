@@ -3,22 +3,33 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
-type SearchUser = { type: "user"; id: string; displayName: string };
+type Target = { type: "user" | "guest"; id: string; name: string };
+type OtherGuest = { id: string; name: string };
+
+/** Loose name match used to float likely duplicates ("Mike" / "Mike B.") to the top. */
+function looksLikeSameName(a: string, b: string) {
+  const x = a.trim().toLowerCase();
+  const y = b.trim().toLowerCase();
+  if (!x || !y) return false;
+  return x.includes(y) || y.includes(x) || x.split(/\s+/)[0] === y.split(/\s+/)[0];
+}
 
 export function MergeGuestControl({
   guestId,
   guestName,
   sessions,
+  otherGuests,
 }: {
   guestId: string;
   guestName: string;
   sessions: number;
+  otherGuests: OtherGuest[];
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<SearchUser[]>([]);
-  const [target, setTarget] = useState<SearchUser | null>(null);
+  const [results, setResults] = useState<Target[]>([]);
+  const [target, setTarget] = useState<Target | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -30,7 +41,11 @@ export function MergeGuestControl({
       const res = await fetch(`/api/players/search?q=${encodeURIComponent(query)}`);
       if (res.ok) {
         const data = await res.json();
-        setResults([...(data.friends ?? []), ...(data.others ?? [])]);
+        const users: { id: string; displayName: string }[] = [
+          ...(data.friends ?? []),
+          ...(data.others ?? []),
+        ];
+        setResults(users.map((u) => ({ type: "user", id: u.id, name: u.displayName })));
       }
     }, 200);
     return () => {
@@ -45,7 +60,9 @@ export function MergeGuestControl({
     const res = await fetch(`/api/admin/guests/${guestId}/merge`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ targetUserId: target.id }),
+      body: JSON.stringify(
+        target.type === "user" ? { targetUserId: target.id } : { targetGuestId: target.id }
+      ),
     });
     setLoading(false);
 
@@ -58,20 +75,27 @@ export function MergeGuestControl({
     router.refresh();
   }
 
+  const q = query.trim().toLowerCase();
+  const guestMatches = otherGuests
+    .filter((g) => (q ? g.name.toLowerCase().includes(q) : true))
+    .map((g) => ({ ...g, likely: looksLikeSameName(g.name, guestName) }))
+    .sort((a, b) => Number(b.likely) - Number(a.likely) || a.name.localeCompare(b.name))
+    .slice(0, 6);
+
   if (!open) {
     return (
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="rounded border border-black/20 px-3 py-1 text-sm dark:border-white/20"
+        className="btn-secondary self-start px-3 py-1 text-sm"
       >
-        Merge into account...
+        Merge into account or guest...
       </button>
     );
   }
 
   return (
-    <div className="flex flex-col gap-2 rounded border border-black/10 p-3 dark:border-white/10">
+    <div className="flex flex-col gap-2 border p-3 border-line rounded-xl bg-surface">
       {!target ? (
         <>
           <input
@@ -79,51 +103,86 @@ export function MergeGuestControl({
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search for the real account..."
-            className="rounded border border-black/20 px-2 py-1 text-sm dark:border-white/20"
+            className="px-2 py-1 text-sm input"
           />
+          {guestMatches.length > 0 && (
+            <div className="flex flex-col gap-1">
+              <p className="text-xs text-subtle">
+                Other guests (same person under another banker?)
+              </p>
+              <ul className="flex flex-col gap-1">
+                {guestMatches.map((g) => (
+                  <li key={g.id}>
+                    <button
+                      type="button"
+                      onClick={() => setTarget({ type: "guest", id: g.id, name: g.name })}
+                      className="text-sm hover:underline"
+                    >
+                      {g.name} <span className="text-xs text-subtle">(guest)</span>
+                      {g.likely && (
+                        <span className="ml-1 text-xs text-subtle">· likely match</span>
+                      )}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
           {results.length > 0 && (
-            <ul className="flex flex-col gap-1">
-              {results.map((u) => (
-                <li key={u.id}>
-                  <button
-                    type="button"
-                    onClick={() => setTarget(u)}
-                    className="text-sm hover:underline"
-                  >
-                    {u.displayName}
-                  </button>
-                </li>
-              ))}
-            </ul>
+            <div className="flex flex-col gap-1">
+              <p className="text-xs text-subtle">Accounts</p>
+              <ul className="flex flex-col gap-1">
+                {results.map((u) => (
+                  <li key={u.id}>
+                    <button
+                      type="button"
+                      onClick={() => setTarget(u)}
+                      className="text-sm hover:underline"
+                    >
+                      {u.name}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
           )}
         </>
       ) : (
         <>
           <p className="text-sm">
             Move {sessions} completed session{sessions === 1 ? "" : "s"} from guest{" "}
-            <strong>{guestName}</strong> into <strong>{target.displayName}</strong>&apos;s
-            account? This can&apos;t be undone from the UI.
+            <strong>{guestName}</strong> into{" "}
+            {target.type === "user" ? (
+              <>
+                <strong>{target.name}</strong>&apos;s account
+              </>
+            ) : (
+              <>
+                guest <strong>{target.name}</strong>
+              </>
+            )}
+            ? This can&apos;t be undone from the UI.
           </p>
           <div className="flex gap-2">
             <button
               type="button"
               disabled={loading}
               onClick={confirmMerge}
-              className="rounded bg-black px-3 py-1 text-sm text-white disabled:opacity-50 dark:bg-white dark:text-black"
+              className="px-3 py-1 text-sm disabled:opacity-50 btn-primary"
             >
               {loading ? "Merging..." : "Confirm merge"}
             </button>
             <button
               type="button"
               onClick={() => setTarget(null)}
-              className="rounded border border-black/20 px-3 py-1 text-sm dark:border-white/20"
+              className="px-3 py-1 text-sm btn-secondary"
             >
               Back
             </button>
           </div>
         </>
       )}
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm text-danger">{error}</p>}
       <button
         type="button"
         onClick={() => {
@@ -133,7 +192,7 @@ export function MergeGuestControl({
           setResults([]);
           setError(null);
         }}
-        className="self-start text-xs text-black/50 underline dark:text-white/50"
+        className="self-start text-xs underline text-subtle"
       >
         Cancel
       </button>

@@ -102,13 +102,13 @@ export function PlayerPicker({
           {selected.map((p) => (
             <li
               key={`${p.type}-${p.id}`}
-              className="flex items-center gap-2 rounded-full border border-black/20 px-3 py-1 text-sm dark:border-white/20"
+              className="flex items-center gap-2 rounded-full px-3 py-1 text-sm border border-line-strong rounded-lg"
             >
               {p.label}
               <button
                 type="button"
                 onClick={() => removePlayer(p.type, p.id)}
-                className="text-black/50 hover:text-black dark:text-white/50 dark:hover:text-white"
+                className="text-subtle hover:text-foreground"
                 aria-label={`Remove ${p.label}`}
               >
                 ×
@@ -127,14 +127,14 @@ export function PlayerPicker({
           }}
           onFocus={() => setOpen(true)}
           placeholder="Search friends or type a name to add a guest..."
-          className="w-full rounded border border-black/20 px-3 py-2 text-sm dark:border-white/20"
+          className="w-full px-3 py-2 text-sm input"
         />
 
         {open && query.trim().length > 0 && (
-          <div className="absolute z-10 mt-1 w-full rounded border border-black/10 bg-white shadow-lg dark:border-white/10 dark:bg-zinc-900">
+          <div className="popover absolute z-10 mt-1 w-full">
             {results.friends.length > 0 && (
-              <div className="border-b border-black/10 p-2 dark:border-white/10">
-                <p className="px-2 pb-1 text-xs font-medium uppercase text-black/40 dark:text-white/40">
+              <div className="border-b p-2 border-line">
+                <p className="px-2 pb-1 text-xs font-medium uppercase text-subtle">
                   Friends
                 </p>
                 {results.friends.map((u) => (
@@ -143,7 +143,7 @@ export function PlayerPicker({
                     type="button"
                     disabled={isSelected("user", u.id)}
                     onClick={() => addPlayer({ type: "user", id: u.id, label: u.displayName })}
-                    className="flex w-full items-center justify-between rounded px-2 py-1.5 text-left text-sm hover:bg-black/5 disabled:opacity-40 dark:hover:bg-white/10"
+                    className="flex w-full items-center justify-between rounded px-2 py-1.5 text-left text-sm disabled:opacity-40 hover:bg-white/5"
                   >
                     {u.displayName}
                   </button>
@@ -152,8 +152,8 @@ export function PlayerPicker({
             )}
 
             {results.guests.length > 0 && (
-              <div className="border-b border-black/10 p-2 dark:border-white/10">
-                <p className="px-2 pb-1 text-xs font-medium uppercase text-black/40 dark:text-white/40">
+              <div className="border-b p-2 border-line">
+                <p className="px-2 pb-1 text-xs font-medium uppercase text-subtle">
                   Your guests
                 </p>
                 {results.guests.map((g) => (
@@ -162,7 +162,7 @@ export function PlayerPicker({
                     type="button"
                     disabled={isSelected("guest", g.id)}
                     onClick={() => addPlayer({ type: "guest", id: g.id, label: `${g.name} (guest)` })}
-                    className="flex w-full items-center justify-between rounded px-2 py-1.5 text-left text-sm hover:bg-black/5 disabled:opacity-40 dark:hover:bg-white/10"
+                    className="flex w-full items-center justify-between rounded px-2 py-1.5 text-left text-sm disabled:opacity-40 hover:bg-white/5"
                   >
                     {g.name}
                   </button>
@@ -171,8 +171,8 @@ export function PlayerPicker({
             )}
 
             {results.others.length > 0 && (
-              <div className="border-b border-black/10 p-2 dark:border-white/10">
-                <p className="px-2 pb-1 text-xs font-medium uppercase text-black/40 dark:text-white/40">
+              <div className="border-b p-2 border-line">
+                <p className="px-2 pb-1 text-xs font-medium uppercase text-subtle">
                   Other players
                 </p>
                 {results.others.map((u) => (
@@ -202,7 +202,7 @@ export function PlayerPicker({
               <button
                 type="button"
                 onClick={createGuestAndSelect}
-                className="w-full rounded px-2 py-1.5 text-left text-sm text-black/70 hover:bg-black/5 dark:text-white/70 dark:hover:bg-white/10"
+                className="w-full rounded px-2 py-1.5 text-left text-sm text-muted hover:bg-white/5"
               >
                 {hasResults ? "Not them? " : ""}Add &quot;{query.trim()}&quot; as a guest
               </button>

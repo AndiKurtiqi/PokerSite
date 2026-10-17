@@ -37,17 +37,17 @@ export default async function AdminUsersPage() {
   );
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-6 py-10">
+    <div className="page">
       <div>
-        <h1 className="text-2xl font-semibold">Accounts</h1>
-        <p className="text-sm text-black/60 dark:text-white/60">
+        <h1 className="page-title">Accounts</h1>
+        <p className="text-sm text-muted">
           Disable an account to block their login while keeping their game
           history and leaderboard stats intact. Permanent deletion is only
           available for accounts with no game history, guests, or chip sets.
         </p>
       </div>
 
-      <div className="rounded border border-black/10 dark:border-white/10">
+      <div className="border border-line rounded-xl bg-surface">
         {rows.map((row) => (
           <UserRow key={row.id} user={row} isSelf={row.id === session!.user.id} />
         ))}

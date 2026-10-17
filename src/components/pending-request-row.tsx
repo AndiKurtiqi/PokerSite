@@ -27,21 +27,21 @@ export function PendingRequestRow({
   }
 
   return (
-    <tr className="border-b border-black/10 dark:border-white/10">
+    <tr className="border-b border-line">
       <td className="py-2">{displayName}</td>
-      <td className="py-2 text-black/60 dark:text-white/60">{email}</td>
+      <td className="py-2 text-muted">{email}</td>
       <td className="flex justify-end gap-2 py-2">
         <button
           onClick={() => act("APPROVED")}
           disabled={loading !== null}
-          className="rounded bg-black px-3 py-1 text-sm text-white disabled:opacity-50 dark:bg-white dark:text-black"
+          className="px-3 py-1 text-sm disabled:opacity-50 btn-primary"
         >
           {loading === "APPROVED" ? "Approving..." : "Approve"}
         </button>
         <button
           onClick={() => act("REJECTED")}
           disabled={loading !== null}
-          className="rounded border border-black/20 px-3 py-1 text-sm disabled:opacity-50 dark:border-white/20"
+          className="px-3 py-1 text-sm disabled:opacity-50 btn-secondary"
         >
           {loading === "REJECTED" ? "Rejecting..." : "Reject"}
         </button>

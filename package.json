@@ -8,6 +8,12 @@
     "postinstall": "prisma generate",
     "start": "next start",
     "lint": "eslint",
+    "test": "vitest run --configLoader runner",
+    "test:unit": "vitest run --configLoader runner --project unit",
+    "test:api": "vitest run --configLoader runner --project api",
+    "test:watch": "vitest --configLoader runner",
+    "test:e2e": "playwright test",
+    "test:all": "vitest run --configLoader runner && playwright test",
     "db:seed": "tsx --env-file=.env prisma/seed.ts",
     "db:studio": "prisma studio"
   },
@@ -23,9 +29,10 @@
     "zod": "^4.6.5"
   },
   "devDependencies": {
+    "@playwright/test": "^1.64.0",
     "@tailwindcss/postcss": "^4",
     "@types/bcryptjs": "^2.4.6",
-    "@types/node": "^20",
+    "@types/node": "^24.19.2",
     "@types/pg": "^8.23.1",
     "@types/react": "^19",
     "@types/react-dom": "^19",
@@ -34,6 +41,7 @@
     "prisma": "^7.10.0",
     "tailwindcss": "^4",
     "tsx": "^4.23.13",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^5.0.4"
   }
 }

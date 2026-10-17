@@ -46,7 +46,7 @@ export function ProfileForm({
           required
           value={displayName}
           onChange={(e) => setDisplayName(e.target.value)}
-          className="rounded border border-black/20 px-3 py-2 dark:border-white/20"
+          className="px-3 py-2 input"
         />
       </label>
 
@@ -57,16 +57,16 @@ export function ProfileForm({
           placeholder="https://..."
           value={avatarUrl}
           onChange={(e) => setAvatarUrl(e.target.value)}
-          className="rounded border border-black/20 px-3 py-2 dark:border-white/20"
+          className="px-3 py-2 input"
         />
-        <span className="text-xs text-black/50 dark:text-white/50">
+        <span className="text-xs text-subtle">
           Leave blank to use your initials instead.
         </span>
       </label>
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm text-danger">{error}</p>}
       {success && (
-        <p className="text-sm text-green-600">
+        <p className="text-sm text-success">
           Saved. The nav bar and dashboard greeting update after your next
           login.
         </p>
@@ -75,7 +75,7 @@ export function ProfileForm({
       <button
         type="submit"
         disabled={loading}
-        className="self-start rounded bg-black px-4 py-2 text-sm text-white disabled:opacity-50 dark:bg-white dark:text-black"
+        className="self-start px-4 py-2 text-sm disabled:opacity-50 btn-primary"
       >
         {loading ? "Saving..." : "Save profile"}
       </button>

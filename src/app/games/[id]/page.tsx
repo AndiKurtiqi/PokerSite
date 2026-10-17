@@ -56,17 +56,24 @@ export default async function GameDetailPage({
   const sortedTableNumbers = [...tables.keys()].sort((a, b) => a - b);
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-6 py-10">
-      <div className="flex items-start justify-between">
+    <div className="page">
+      <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <Link href="/games" className="text-sm underline">
+          <Link href="/games" className="link-quiet text-sm">
             ← All games
           </Link>
-          <h1 className="mt-2 text-2xl font-semibold">
+          <h1 className="page-title mt-2">
             {formatUSD(Number(game.buyInAmount))} buy-in
           </h1>
-          <p className="text-sm text-black/60 dark:text-white/60">
-            {game.status === "ACTIVE" ? "In progress" : "Completed"} · banked by{" "}
+          <p className="mt-1 flex flex-wrap items-center gap-x-2 text-sm text-muted">
+            <span
+              className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                game.status === "ACTIVE" ? "bg-success/15 text-success" : "bg-white/10 text-muted"
+              }`}
+            >
+              {game.status === "ACTIVE" ? "In progress" : "Completed"}
+            </span>
+            banked by{" "}
             {game.creator.displayName} · started {game.startedAt.toLocaleString()}
           </p>
         </div>
@@ -89,9 +96,9 @@ export default async function GameDetailPage({
       </div>
 
       {chipPlan && chipPlan.perPlayer.length > 0 && (
-        <div className="rounded border border-black/10 p-4 dark:border-white/10">
-          <h2 className="font-medium">Chip plan (per player)</h2>
-          <ul className="mt-2 flex flex-wrap gap-3 text-sm text-black/60 dark:text-white/60">
+        <div className="card p-4">
+          <h2 className="section-label">Chip plan (per player)</h2>
+          <ul className="mt-2 flex flex-wrap gap-3 text-sm text-muted">
             {chipPlan.perPlayer.map((line) => (
               <li key={line.valueCents}>
                 {formatUSD(centsToDollars(line.valueCents))} × {line.countPerPlayer}
@@ -99,7 +106,7 @@ export default async function GameDetailPage({
             ))}
           </ul>
           {chipPlan.warnings.length > 0 && (
-            <ul className="mt-2 flex flex-col gap-1 text-sm text-amber-600">
+            <ul className="mt-2 flex flex-col gap-1 text-sm text-amber-400">
               {chipPlan.warnings.map((w, i) => (
                 <li key={i}>⚠ {w}</li>
               ))}
@@ -112,10 +119,11 @@ export default async function GameDetailPage({
         const participants = tables.get(tableNumber)!;
         return (
           <div key={tableNumber} className="flex flex-col gap-2">
-            <h2 className="text-sm font-medium uppercase text-black/50 dark:text-white/50">
-              Table {tableNumber} ({participants.length}/{MAX_PLAYERS_PER_TABLE})
+            <h2 className="section-label">
+              Table {tableNumber} ({participants.filter((p) => p.leftAt === null).length}/
+              {MAX_PLAYERS_PER_TABLE})
             </h2>
-            <div className="rounded border border-black/10 dark:border-white/10">
+            <div className="card">
               {participants.map((p) => (
                 <div key={p.id} className="px-4">
                   <ParticipantRow
@@ -140,16 +148,22 @@ export default async function GameDetailPage({
         <AddPlayerControl gameId={game.id} defaultAmount={Number(game.buyInAmount)} />
       )}
 
-      <div className="flex justify-between text-sm text-black/60 dark:text-white/60">
-        <span>Total bought in: {formatUSD(totalBoughtIn)}</span>
-        <span>
-          Total cashed out: {formatUSD(totalCashedOut)}
-          {!allCashedOut && ` (${cashedOutParticipants.length}/${game.participants.length} so far)`}
-        </span>
+      <div className="tabular grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
+        <div className="card flex items-center justify-between px-4 py-3">
+          <span className="text-muted">Total bought in</span>
+          <span className="text-lg font-semibold">{formatUSD(totalBoughtIn)}</span>
+        </div>
+        <div className="card flex items-center justify-between px-4 py-3">
+          <span className="text-muted">
+            Total cashed out
+            {!allCashedOut && ` (${cashedOutParticipants.length}/${game.participants.length} so far)`}
+          </span>
+          <span className="text-lg font-semibold">{formatUSD(totalCashedOut)}</span>
+        </div>
       </div>
 
       {(isCreator || isAdmin) && (
-        <div className="flex justify-end border-t border-black/10 pt-4 dark:border-white/10">
+        <div className="flex justify-end border-t pt-4 border-line">
           <DeleteGameButton gameId={game.id} />
         </div>
       )}

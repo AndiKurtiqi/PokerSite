@@ -30,7 +30,7 @@ export function DeleteGameButton({ gameId }: { gameId: string }) {
       <button
         type="button"
         onClick={() => setConfirming(true)}
-        className="text-sm text-red-600 underline"
+        className="text-sm underline text-danger"
       >
         Delete game
       </button>
@@ -39,7 +39,7 @@ export function DeleteGameButton({ gameId }: { gameId: string }) {
 
   return (
     <div className="flex flex-col items-end gap-1">
-      <p className="max-w-xs text-right text-sm text-red-600">
+      <p className="max-w-xs text-right text-sm text-danger">
         Permanently delete this game? This erases every buy-in, cash-out, and
         table assignment in it and removes it from everyone&apos;s
         leaderboard stats. This can&apos;t be undone.
@@ -48,7 +48,7 @@ export function DeleteGameButton({ gameId }: { gameId: string }) {
         <button
           type="button"
           onClick={() => setConfirming(false)}
-          className="rounded border border-black/20 px-3 py-1 text-sm dark:border-white/20"
+          className="px-3 py-1 text-sm btn-secondary"
         >
           Cancel
         </button>
@@ -56,12 +56,12 @@ export function DeleteGameButton({ gameId }: { gameId: string }) {
           type="button"
           disabled={loading}
           onClick={confirmDelete}
-          className="rounded bg-red-600 px-3 py-1 text-sm text-white disabled:opacity-50"
+          className="px-3 py-1 text-sm disabled:opacity-50 btn-danger"
         >
           {loading ? "Deleting..." : "Confirm delete"}
         </button>
       </div>
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm text-danger">{error}</p>}
     </div>
   );
 }

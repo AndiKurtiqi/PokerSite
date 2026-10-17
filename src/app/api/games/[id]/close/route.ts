@@ -38,8 +38,10 @@ export async function POST(
   const { cashouts } = parsed.data;
 
   const participantIds = new Set(game.participants.map((p) => p.id));
+  const submittedIds = new Set(cashouts.map((c) => c.participantId));
   if (
-    cashouts.length !== game.participants.length ||
+    cashouts.length !== participantIds.size ||
+    submittedIds.size !== participantIds.size ||
     !cashouts.every((c) => participantIds.has(c.participantId))
   ) {
     return NextResponse.json(

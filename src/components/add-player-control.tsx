@@ -92,7 +92,7 @@ export function AddPlayerControl({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="rounded border border-black/20 px-3 py-1 text-sm dark:border-white/20"
+        className="px-3 py-1 text-sm btn-secondary"
       >
         + Add player
       </button>
@@ -103,7 +103,7 @@ export function AddPlayerControl({
     results.friends.length > 0 || results.guests.length > 0 || results.others.length > 0;
 
   return (
-    <div className="flex flex-col gap-2 rounded border border-black/10 p-3 dark:border-white/10">
+    <div className="flex flex-col gap-2 border p-3 border-line rounded-xl bg-surface">
       {!picked ? (
         <>
           <input
@@ -111,13 +111,13 @@ export function AddPlayerControl({
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search friends or type a name to add a guest..."
-            className="rounded border border-black/20 px-2 py-1 text-sm dark:border-white/20"
+            className="px-2 py-1 text-sm input"
           />
           {query.trim().length > 0 && (
             <div className="flex flex-col gap-2">
               {results.friends.length > 0 && (
                 <div>
-                  <p className="text-xs font-medium uppercase text-black/40 dark:text-white/40">
+                  <p className="text-xs font-medium uppercase text-subtle">
                     Friends
                   </p>
                   {results.friends.map((u) => (
@@ -127,7 +127,7 @@ export function AddPlayerControl({
                       onClick={() =>
                         setPicked({ type: "user", id: u.id, label: u.displayName })
                       }
-                      className="block w-full rounded px-1 py-1 text-left text-sm hover:bg-black/5 dark:hover:bg-white/10"
+                      className="block w-full rounded px-1 py-1 text-left text-sm hover:bg-white/5"
                     >
                       {u.displayName}
                     </button>
@@ -136,7 +136,7 @@ export function AddPlayerControl({
               )}
               {results.guests.length > 0 && (
                 <div>
-                  <p className="text-xs font-medium uppercase text-black/40 dark:text-white/40">
+                  <p className="text-xs font-medium uppercase text-subtle">
                     Your guests
                   </p>
                   {results.guests.map((g) => (
@@ -144,7 +144,7 @@ export function AddPlayerControl({
                       key={g.id}
                       type="button"
                       onClick={() => setPicked({ type: "guest", id: g.id, label: g.name })}
-                      className="block w-full rounded px-1 py-1 text-left text-sm hover:bg-black/5 dark:hover:bg-white/10"
+                      className="block w-full rounded px-1 py-1 text-left text-sm hover:bg-white/5"
                     >
                       {g.name}
                     </button>
@@ -153,7 +153,7 @@ export function AddPlayerControl({
               )}
               {results.others.length > 0 && (
                 <div>
-                  <p className="text-xs font-medium uppercase text-black/40 dark:text-white/40">
+                  <p className="text-xs font-medium uppercase text-subtle">
                     Other players
                   </p>
                   {results.others.map((u) => (
@@ -163,7 +163,7 @@ export function AddPlayerControl({
                       onClick={() =>
                         setPicked({ type: "user", id: u.id, label: u.displayName })
                       }
-                      className="block w-full rounded px-1 py-1 text-left text-sm hover:bg-black/5 dark:hover:bg-white/10"
+                      className="block w-full rounded px-1 py-1 text-left text-sm hover:bg-white/5"
                     >
                       {u.displayName}
                     </button>
@@ -173,7 +173,7 @@ export function AddPlayerControl({
               <button
                 type="button"
                 onClick={createGuestAndPick}
-                className="rounded px-1 py-1 text-left text-sm text-black/70 hover:bg-black/5 dark:text-white/70 dark:hover:bg-white/10"
+                className="rounded px-1 py-1 text-left text-sm text-muted hover:bg-white/5"
               >
                 {hasResults ? "Not them? " : ""}Add &quot;{query.trim()}&quot; as a guest
               </button>
@@ -193,31 +193,31 @@ export function AddPlayerControl({
               autoFocus
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
-              className="w-28 rounded border border-black/20 px-2 py-1 text-sm dark:border-white/20"
+              className="w-28 px-2 py-1 text-sm input"
             />
             <button
               type="button"
               disabled={loading}
               onClick={confirmAdd}
-              className="rounded bg-black px-3 py-1 text-sm text-white disabled:opacity-50 dark:bg-white dark:text-black"
+              className="px-3 py-1 text-sm disabled:opacity-50 btn-primary"
             >
               {loading ? "Adding..." : "Confirm"}
             </button>
             <button
               type="button"
               onClick={() => setPicked(null)}
-              className="rounded border border-black/20 px-3 py-1 text-sm dark:border-white/20"
+              className="px-3 py-1 text-sm btn-secondary"
             >
               Back
             </button>
           </div>
         </>
       )}
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm text-danger">{error}</p>}
       <button
         type="button"
         onClick={reset}
-        className="self-start text-xs text-black/50 underline dark:text-white/50"
+        className="self-start text-xs underline text-subtle"
       >
         Cancel
       </button>

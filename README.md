@@ -39,6 +39,31 @@ real password once auth includes account settings (not built yet).
 Postgres runs on port **5433** (not 5432), since this machine already has a
 Homebrew Postgres service bound to 5432.
 
+## Tests
+
+Needs the local Postgres container running (`docker compose up -d`). Tests use
+their own throwaway database (`poker_home_games_test`, created and migrated
+automatically) and refuse to run against anything that isn't a local `*_test`
+database, so they never touch your dev or production data.
+
+| Command | What it runs |
+| --- | --- |
+| `npm test` | Unit + API tests (Vitest, ~10s) |
+| `npm run test:unit` | Pure logic only: chip calculator, leaderboard/streaks, money, no database |
+| `npm run test:api` | Every API route and the leaderboard query against the test database |
+| `npm run test:e2e` | Browser tests (Playwright): builds the app and clicks through the real UI on port 3100 |
+| `npm run test:all` | Everything |
+
+Re-running browser tests without rebuilding: `E2E_SKIP_BUILD=1 npm run test:e2e`.
+First-time setup on a new machine: `npx playwright install chromium`.
+
+Covered: signup/approval/login/roles, admin queue and account management,
+guest merging (into accounts or other guests), friends and suggestions, the player picker, chip sets and the chip plan,
+creating/joining/running/closing/deleting games, rebuys and cash-outs
+(including $0), multi-table seating (9 max), account settings, and the
+leaderboard (sorting, streaks, guests). The `known gaps` test in
+`tests/e2e/admin.spec.ts` documents a real issue and is expected to fail until fixed.
+
 ## How accounts work
 
 1. Anyone can request an account at `/signup` (email/password) — it's created with `PENDING` status.

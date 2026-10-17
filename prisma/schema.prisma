@@ -73,6 +73,7 @@ model Guest {
   id             String   @id @default(cuid())
   name           String
   createdById    String
+  // Id of the User or Guest this guest was merged into (null while still active).
   mergedIntoId   String?
   createdAt      DateTime @default(now())
 

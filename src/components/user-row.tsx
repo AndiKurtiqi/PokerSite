@@ -50,19 +50,22 @@ export function UserRow({ user, isSelf }: { user: UserRowData; isSelf: boolean }
   }
 
   return (
-    <div className="flex flex-col gap-2 border-b border-black/10 p-4 last:border-0 dark:border-white/10">
+    <div
+      data-testid="user-row"
+      className="flex flex-col gap-2 border-b p-4 last:border-0 border-line"
+    >
       <div className="flex items-center justify-between">
         <div>
           <p className="font-medium">
             {user.displayName}
             {user.role === "ADMIN" && (
-              <span className="ml-2 text-xs text-black/40 dark:text-white/40">admin</span>
+              <span className="ml-2 text-xs text-subtle">admin</span>
             )}
             {isSelf && (
-              <span className="ml-2 text-xs text-black/40 dark:text-white/40">you</span>
+              <span className="ml-2 text-xs text-subtle">you</span>
             )}
           </p>
-          <p className="text-sm text-black/60 dark:text-white/60">
+          <p className="text-sm text-muted">
             {user.email} · {user.status.toLowerCase()} · joined{" "}
             {new Date(user.createdAt).toLocaleDateString()}
           </p>
@@ -75,7 +78,7 @@ export function UserRow({ user, isSelf }: { user: UserRowData; isSelf: boolean }
                 type="button"
                 disabled={loading}
                 onClick={() => setStatus("APPROVED")}
-                className="rounded border border-black/20 px-3 py-1 text-sm disabled:opacity-50 dark:border-white/20"
+                className="px-3 py-1 text-sm disabled:opacity-50 btn-secondary"
               >
                 Re-enable
               </button>
@@ -84,7 +87,7 @@ export function UserRow({ user, isSelf }: { user: UserRowData; isSelf: boolean }
                 type="button"
                 disabled={loading}
                 onClick={() => setStatus("DISABLED")}
-                className="rounded border border-black/20 px-3 py-1 text-sm disabled:opacity-50 dark:border-white/20"
+                className="px-3 py-1 text-sm disabled:opacity-50 btn-secondary"
               >
                 Disable
               </button>
@@ -97,7 +100,7 @@ export function UserRow({ user, isSelf }: { user: UserRowData; isSelf: boolean }
                     type="button"
                     disabled={loading}
                     onClick={deleteUser}
-                    className="rounded bg-red-600 px-3 py-1 text-sm text-white disabled:opacity-50"
+                    className="px-3 py-1 text-sm disabled:opacity-50 btn-danger"
                   >
                     {loading ? "Deleting..." : "Confirm delete"}
                   </button>
@@ -113,7 +116,7 @@ export function UserRow({ user, isSelf }: { user: UserRowData; isSelf: boolean }
                 <button
                   type="button"
                   onClick={() => setConfirmingDelete(true)}
-                  className="rounded border border-red-300 px-3 py-1 text-sm text-red-600 dark:border-red-800"
+                  className="btn-secondary border-danger/40 px-3 py-1 text-sm text-danger hover:bg-danger/10"
                 >
                   Delete permanently
                 </button>
@@ -121,7 +124,7 @@ export function UserRow({ user, isSelf }: { user: UserRowData; isSelf: boolean }
           </div>
         )}
       </div>
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm text-danger">{error}</p>}
     </div>
   );
 }

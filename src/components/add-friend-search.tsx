@@ -54,10 +54,10 @@ export function AddFriendSearch() {
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder="Search players to add as a friend..."
-        className="w-full rounded border border-black/20 px-3 py-2 text-sm dark:border-white/20"
+        className="w-full px-3 py-2 text-sm input"
       />
       {query.trim().length > 0 && results.length > 0 && (
-        <div className="absolute z-10 mt-1 w-full rounded border border-black/10 bg-white p-2 shadow-lg dark:border-white/10 dark:bg-zinc-900">
+        <div className="popover absolute z-10 mt-1 w-full p-2">
           {results.map((u) => (
             <div key={u.id} className="flex items-center justify-between px-2 py-1.5">
               <span className="text-sm">{u.displayName}</span>
@@ -74,7 +74,7 @@ export function AddFriendSearch() {
         </div>
       )}
       {query.trim().length > 0 && results.length === 0 && (
-        <div className="absolute z-10 mt-1 w-full rounded border border-black/10 bg-white p-2 text-sm text-black/50 shadow-lg dark:border-white/10 dark:bg-zinc-900 dark:text-white/50">
+        <div className="popover absolute z-10 mt-1 w-full p-2 text-sm text-muted">
           No matching players.
         </div>
       )}
