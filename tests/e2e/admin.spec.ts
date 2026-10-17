@@ -207,6 +207,38 @@ test.describe("merge guests", () => {
     await expect(merged).toContainText("+$40.00"); // 10 + 30 combined
   });
 
+  test("a person who was added twice in one game (rebuy as a new guest) can be merged by combining their seats", async ({ page }) => {
+    const aidan = await seedUser({ email: "aidan@test.local", name: "Aidan Ludwig" });
+    const dupe = await seedGuest(adminId, "Aiden Ludwig");
+    await seedGame({
+      creatorId: adminId,
+      status: "COMPLETED",
+      seats: [
+        { userId: aidan, boughtIn: 20, cashedOut: 10 },
+        { guestId: dupe, boughtIn: 20, cashedOut: 50 },
+      ],
+    });
+    await loginAsAdmin(page);
+    await page.goto("/admin/guests");
+
+    const row = page.getByTestId("guest-row").filter({ hasText: "Aiden Ludwig" });
+    await row.getByRole("button", { name: "Merge into account or guest..." }).click();
+    await row.getByPlaceholder("Search for the real account...").fill("aidan");
+    await row.getByRole("button", { name: "Aidan Ludwig" }).click();
+    await row.getByRole("button", { name: "Confirm merge" }).click();
+
+    // It explains the overlap instead of failing, and offers to combine
+    await expect(row).toContainText("already has a seat in 1 of this guest's games");
+    await row.getByRole("button", { name: "Combine seats and merge" }).click();
+    await expect(page.getByText("No unmerged guests.")).toBeVisible();
+
+    // One night on the leaderboard: 60 out - 40 in
+    await page.goto("/dashboard");
+    const lb = page.getByRole("row", { name: /Aidan Ludwig/ });
+    await expect(lb).toHaveCount(1);
+    await expect(lb).toContainText("+$20.00");
+  });
+
   test("shows an empty state when there are no guests", async ({ page }) => {
     await loginAsAdmin(page);
     await page.goto("/admin/guests");

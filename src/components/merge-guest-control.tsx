@@ -32,6 +32,8 @@ export function MergeGuestControl({
   const [target, setTarget] = useState<Target | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  // Set when the person is already seated in some of the same games, so the seats need combining.
+  const [canCombine, setCanCombine] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -53,21 +55,23 @@ export function MergeGuestControl({
     };
   }, [query]);
 
-  async function confirmMerge() {
+  async function confirmMerge(combineSeats = false) {
     if (!target) return;
     setLoading(true);
     setError(null);
     const res = await fetch(`/api/admin/guests/${guestId}/merge`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(
-        target.type === "user" ? { targetUserId: target.id } : { targetGuestId: target.id }
-      ),
+      body: JSON.stringify({
+        ...(target.type === "user" ? { targetUserId: target.id } : { targetGuestId: target.id }),
+        ...(combineSeats ? { combineSeats: true } : {}),
+      }),
     });
     setLoading(false);
 
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
+      setCanCombine(Boolean(data.canCombine));
       setError(data.error ?? "Something went wrong.");
       return;
     }
@@ -167,14 +171,18 @@ export function MergeGuestControl({
             <button
               type="button"
               disabled={loading}
-              onClick={confirmMerge}
+              onClick={() => confirmMerge(canCombine)}
               className="px-3 py-1 text-sm disabled:opacity-50 btn-primary"
             >
-              {loading ? "Merging..." : "Confirm merge"}
+              {loading ? "Merging..." : canCombine ? "Combine seats and merge" : "Confirm merge"}
             </button>
             <button
               type="button"
-              onClick={() => setTarget(null)}
+              onClick={() => {
+                setTarget(null);
+                setCanCombine(false);
+                setError(null);
+              }}
               className="px-3 py-1 text-sm btn-secondary"
             >
               Back
@@ -182,7 +190,7 @@ export function MergeGuestControl({
           </div>
         </>
       )}
-      {error && <p className="text-sm text-danger">{error}</p>}
+      {error && <p className={`text-sm ${canCombine ? "text-muted" : "text-danger"}`}>{error}</p>}
       <button
         type="button"
         onClick={() => {
@@ -191,6 +199,7 @@ export function MergeGuestControl({
           setQuery("");
           setResults([]);
           setError(null);
+          setCanCombine(false);
         }}
         className="self-start text-xs underline text-subtle"
       >
