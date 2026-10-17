@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { POST } from "@/app/api/admin/guests/[id]/merge/route";
 import { getLeaderboardRows } from "@/lib/get-leaderboard-rows";
 import { prisma } from "@/lib/prisma";
-import { createAdmin, createGame, createGuest, createUser, ctx, jsonRequest, read, signInAs } from "../support/factories";
+import { createAdmin, createGame, createGuest, createUser, ctx, jsonRequest, num, read, signInAs } from "../support/factories";
 
 const merge = (guestId: string, body: unknown) => POST(jsonRequest("POST", body), ctx({ id: guestId }));
 
@@ -198,6 +198,133 @@ describe("POST /api/admin/guests/[id]/merge", () => {
       expect(
         (await merge(guest.id, { targetUserId: user.id, targetGuestId: other.id })).status
       ).toBe(400);
+    });
+  });
+
+  describe("combining seats when both already sit in the same game", () => {
+    // The usual cause: someone rebought by being added as a second guest.
+    it("offers to combine instead of merging, and changes nothing until confirmed", async () => {
+      const admin = await createAdmin();
+      const aidan = await createUser({ displayName: "Aidan Ludwig" });
+      const dupe = await createGuest(admin, "Aiden Ludwig");
+      await createGame({
+        creator: admin,
+        status: "COMPLETED",
+        seats: [
+          { user: aidan, cashedOut: 10 },
+          { guest: dupe, boughtIn: 20, cashedOut: 50 },
+        ],
+      });
+      signInAs(admin);
+
+      const { status, body } = await read(await merge(dupe.id, { targetUserId: aidan.id }));
+      expect(status).toBe(409);
+      expect(body.canCombine).toBe(true);
+      expect(body.overlaps).toBe(1);
+      expect(await prisma.gameParticipant.count({ where: { guestId: dupe.id } })).toBe(1);
+    });
+
+    it("with combineSeats, adds the two seats together into one and keeps all transactions", async () => {
+      const admin = await createAdmin();
+      const aidan = await createUser({ displayName: "Aidan Ludwig" });
+      const dupe = await createGuest(admin, "Aiden Ludwig");
+      const { game } = await createGame({
+        creator: admin,
+        status: "COMPLETED",
+        seats: [
+          { user: aidan, boughtIn: 20, cashedOut: 10 },
+          { guest: dupe, boughtIn: 20, cashedOut: 50 },
+        ],
+      });
+      signInAs(admin);
+
+      const { status, body } = await read(await merge(dupe.id, { targetUserId: aidan.id, combineSeats: true }));
+      expect(status).toBe(200);
+      expect(body.combinedSeats).toBe(1);
+
+      const seats = await prisma.gameParticipant.findMany({ where: { gameId: game.id }, include: { transactions: true } });
+      expect(seats).toHaveLength(1);
+      expect(seats[0].userId).toBe(aidan.id);
+      expect(num(seats[0].totalBoughtIn)).toBe(40);
+      expect(num(seats[0].totalCashedOut)).toBe(60);
+      expect(seats[0].transactions).toHaveLength(4); // both buy-ins and both cash-outs
+      expect((await prisma.guest.findUniqueOrThrow({ where: { id: dupe.id } })).mergedIntoId).toBe(aidan.id);
+
+      const rows = await getLeaderboardRows();
+      expect(rows).toHaveLength(1);
+      expect(rows[0].sessionsPlayed).toBe(1); // one night, not two
+      expect(rows[0].netProfit).toBe(20); // 60 out - 40 in
+    });
+
+    it("combines overlapping games and moves the rest over normally", async () => {
+      const admin = await createAdmin();
+      const aidan = await createUser();
+      const dupe = await createGuest(admin, "Aiden");
+      const both = await createGame({
+        creator: admin,
+        status: "COMPLETED",
+        seats: [{ user: aidan, cashedOut: 20 }, { guest: dupe, cashedOut: 20 }],
+      });
+      const onlyDupe = await createGame({ creator: admin, status: "COMPLETED", seats: [{ guest: dupe, cashedOut: 30 }] });
+      signInAs(admin);
+
+      expect((await merge(dupe.id, { targetUserId: aidan.id, combineSeats: true })).status).toBe(200);
+      expect(await prisma.gameParticipant.count({ where: { gameId: both.game.id } })).toBe(1);
+      const moved = await prisma.gameParticipant.findFirstOrThrow({ where: { gameId: onlyDupe.game.id } });
+      expect(moved.userId).toBe(aidan.id);
+      expect(moved.guestId).toBeNull();
+    });
+
+    it("works for a guest merged into another guest too", async () => {
+      const admin = await createAdmin();
+      const keep = await createGuest(admin, "Aidan");
+      const dupe = await createGuest(admin, "Aiden");
+      const { game } = await createGame({
+        creator: admin,
+        status: "COMPLETED",
+        seats: [{ guest: keep, cashedOut: 5 }, { guest: dupe, cashedOut: 45 }],
+      });
+      signInAs(admin);
+
+      expect((await merge(dupe.id, { targetGuestId: keep.id, combineSeats: true })).status).toBe(200);
+      const seats = await prisma.gameParticipant.findMany({ where: { gameId: game.id } });
+      expect(seats).toHaveLength(1);
+      expect(seats[0].guestId).toBe(keep.id);
+      expect(num(seats[0].totalCashedOut)).toBe(50);
+    });
+
+    it("can combine two seats in a game that's still running (both still playing)", async () => {
+      const admin = await createAdmin();
+      const aidan = await createUser();
+      const dupe = await createGuest(admin, "Aiden");
+      const { game } = await createGame({
+        creator: admin,
+        seats: [{ user: aidan }, { guest: dupe, boughtIn: 20 }],
+      });
+      signInAs(admin);
+
+      expect((await merge(dupe.id, { targetUserId: aidan.id, combineSeats: true })).status).toBe(200);
+      const seats = await prisma.gameParticipant.findMany({ where: { gameId: game.id } });
+      expect(seats).toHaveLength(1);
+      expect(num(seats[0].totalBoughtIn)).toBe(40);
+      expect(seats[0].totalCashedOut).toBeNull();
+    });
+
+    it("refuses even with combineSeats when one seat has cashed out and the other is still playing", async () => {
+      const admin = await createAdmin();
+      const aidan = await createUser();
+      const dupe = await createGuest(admin, "Aiden");
+      const { game } = await createGame({
+        creator: admin,
+        seats: [{ user: aidan, cashedOut: 10 }, { guest: dupe }],
+      });
+      signInAs(admin);
+
+      const { status, body } = await read(await merge(dupe.id, { targetUserId: aidan.id, combineSeats: true }));
+      expect(status).toBe(409);
+      expect(body.canCombine).toBe(false);
+      expect(await prisma.gameParticipant.count({ where: { gameId: game.id } })).toBe(2);
+      expect((await prisma.guest.findUniqueOrThrow({ where: { id: dupe.id } })).mergedIntoId).toBeNull();
     });
   });
 });
