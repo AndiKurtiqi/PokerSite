@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { MAX_PLAYERS_PER_TABLE } from "@/lib/tables";
+import { MAX_PLAYERS_PER_TABLE, STILL_SEATED } from "@/lib/tables";
 
 const schema = z.object({ tableNumber: z.number().int().min(1) });
 
@@ -40,10 +40,12 @@ export async function PATCH(
     return NextResponse.json({ participant });
   }
 
+  // Cashed-out players don't hold a seat, so they never fill a table up and
+  // can be moved anywhere; only a player still in the game needs a free seat.
   const occupancy = await prisma.gameParticipant.count({
-    where: { gameId, tableNumber },
+    where: { gameId, tableNumber, ...STILL_SEATED },
   });
-  if (occupancy >= MAX_PLAYERS_PER_TABLE) {
+  if (participant.leftAt === null && occupancy >= MAX_PLAYERS_PER_TABLE) {
     return NextResponse.json(
       { error: `Table ${tableNumber} is already full (${MAX_PLAYERS_PER_TABLE}/${MAX_PLAYERS_PER_TABLE}).` },
       { status: 400 }

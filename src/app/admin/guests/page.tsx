@@ -30,30 +30,30 @@ export default async function AdminGuestsPage() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-6 py-10">
+    <div className="page">
       <div>
-        <h1 className="text-2xl font-semibold">Merge guests</h1>
-        <p className="text-sm text-black/60 dark:text-white/60">
-          Once a guest player creates a real account, merge their guest
-          identity into it so their session history and leaderboard stats
-          carry over.
+        <h1 className="page-title">Merge guests</h1>
+        <p className="text-sm text-muted">
+          Merge a guest into the player&apos;s real account, or into another
+          guest when different bankers added the same person, so their
+          session history and leaderboard stats combine into one row.
         </p>
       </div>
 
       {guests.length === 0 ? (
-        <p className="text-sm text-black/60 dark:text-white/60">
+        <p className="text-sm text-muted">
           No unmerged guests.
         </p>
       ) : (
-        <ul className="flex flex-col divide-y divide-black/10 rounded border border-black/10 dark:divide-white/10 dark:border-white/10">
+        <ul className="flex flex-col divide-y border border-line rounded-xl bg-surface divide-line">
           {guests.map((guest) => {
             const stats = statsByGuestId.get(guest.id) ?? { sessions: 0, net: 0 };
             return (
-              <li key={guest.id} className="flex flex-col gap-2 p-4">
+              <li key={guest.id} data-testid="guest-row" className="flex flex-col gap-2 p-4">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-medium">{guest.name}</p>
-                    <p className="text-sm text-black/60 dark:text-white/60">
+                    <p className="text-sm text-muted">
                       Added by {guest.createdBy.displayName} · {stats.sessions} session
                       {stats.sessions === 1 ? "" : "s"}
                       {stats.sessions > 0 && (
@@ -70,6 +70,9 @@ export default async function AdminGuestsPage() {
                   guestId={guest.id}
                   guestName={guest.name}
                   sessions={stats.sessions}
+                  otherGuests={guests
+                    .filter((g) => g.id !== guest.id)
+                    .map((g) => ({ id: g.id, name: g.name }))}
                 />
               </li>
             );

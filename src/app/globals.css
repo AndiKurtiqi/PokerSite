@@ -1,26 +1,143 @@
 @import "tailwindcss";
 
+/*
+ * Poker-room theme: felt-green table with a suit pattern, dark cards on top,
+ * warm gold accent, always dark.
+ * Every color in the app comes from these tokens, so a re-skin is a
+ * one-file change.
+ */
+@theme {
+  --color-background: #0b4b2d; /* the felt */
+  --color-surface: rgb(5 20 13 / 0.92); /* cards sit on the felt as dark panels */
+  --color-surface-raised: #12291d;
+  --color-popover: #f6f1e3; /* popouts: light "card stock", the opposite of everything behind them */
+  --color-line: rgb(255 255 255 / 0.1);
+  --color-line-strong: rgb(255 255 255 / 0.24);
+  --color-foreground: #f2f7f3;
+  --color-muted: #b6c9bc;
+  --color-subtle: #98b0a1;
+  --color-accent: #e3b45c;
+  --color-accent-strong: #f0c673;
+  --color-accent-foreground: #1b1404;
+  --color-felt: #1f8a58;
+  --color-danger: #f27272;
+  --color-success: #4cc790;
+  --font-sans: var(--font-geist-sans), system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  color-scheme: dark;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-sans);
+}
+
+/* The table: suit pattern, a pool of light in the middle, dark vignette at the edges. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    radial-gradient(ellipse 75% 65% at 50% 38%, rgb(255 255 255 / 0.07), transparent 70%),
+    radial-gradient(ellipse 120% 100% at 50% 45%, transparent 45%, rgb(0 0 0 / 0.55) 100%),
+    url("/felt-pattern.svg");
+  background-size: auto, auto, 140px 140px;
+}
+
+::selection {
+  background: rgb(227 180 92 / 0.35);
+}
+
+@layer components {
+  /* Page containers */
+  .page {
+    @apply mx-auto flex w-full max-w-4xl flex-col gap-6 px-4 py-8 sm:px-6 sm:py-10;
+  }
+  .page-narrow {
+    @apply mx-auto flex w-full max-w-xl flex-col gap-6 px-4 py-8 sm:px-6 sm:py-10;
+  }
+  .page-title {
+    @apply text-2xl font-semibold tracking-tight sm:text-3xl;
+  }
+
+  /* Surfaces */
+  .card {
+    @apply rounded-xl border border-line bg-surface;
+  }
+
+  /* Anything that floats above the page: modals, dropdowns. Clearly lighter than the page. */
+  .popover {
+    @apply rounded-xl border-2 border-accent bg-popover shadow-2xl shadow-black/80;
+  }
+
+  /* Buttons: colors and shape only, so call sites keep their own size. */
+  .btn-primary,
+  .btn-secondary,
+  .btn-danger {
+    @apply inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-lg font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-primary {
+    @apply bg-accent text-accent-foreground hover:bg-accent-strong;
+  }
+  .btn-secondary {
+    @apply border border-line-strong bg-white/[0.03] text-foreground hover:bg-white/10;
+  }
+  .btn-danger {
+    @apply bg-danger text-background hover:brightness-110;
+  }
+
+  /* Form controls */
+  .input {
+    @apply rounded-lg border border-line-strong bg-black/40 text-foreground placeholder:text-subtle focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/30;
+  }
+
+  .link-quiet {
+    @apply text-muted underline-offset-4 transition-colors hover:text-foreground hover:underline;
+  }
+
+  .section-label {
+    @apply text-xs font-semibold uppercase tracking-wider text-subtle;
+  }
+}
+
+.page-title + p {
+  margin-top: 0.25rem;
+}
+
+/*
+ * Popouts are light, so inside them the text/line colors flip to dark ones.
+ * Unlayered on purpose: these must beat the utility classes used inside.
+ */
+.popover {
+  --color-foreground: #1a1a12;
+  --color-muted: #51564a;
+  --color-subtle: #6a6f62;
+  --color-line: rgb(0 0 0 / 0.12);
+  --color-line-strong: rgb(0 0 0 / 0.3);
+  --color-success: #1d7a4b;
+  --color-danger: #b83227;
+  color: var(--color-foreground);
+}
+.popover .input {
+  background-color: #fff;
+}
+.popover .btn-secondary {
+  background-color: rgb(0 0 0 / 0.04);
+}
+.popover .btn-secondary:hover {
+  background-color: rgb(0 0 0 / 0.1);
+}
+.popover button:not([class*="btn-"]):hover {
+  background-color: rgb(0 0 0 / 0.07);
+}
+
+/* Numbers should line up in tables and totals. */
+.tabular {
+  font-variant-numeric: tabular-nums;
 }

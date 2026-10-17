@@ -28,8 +28,8 @@ export function LeaderboardTable({ rows }: { rows: LeaderboardRow[] }) {
             onClick={() => setSortKey(opt.key)}
             className={
               sortKey === opt.key
-                ? "rounded-full bg-black px-3 py-1 text-sm text-white dark:bg-white dark:text-black"
-                : "rounded-full border border-black/20 px-3 py-1 text-sm dark:border-white/20"
+                ? "btn-primary rounded-full px-3.5 py-1.5 text-sm"
+                : "btn-secondary rounded-full px-3.5 py-1.5 text-sm"
             }
           >
             {opt.label}
@@ -37,33 +37,34 @@ export function LeaderboardTable({ rows }: { rows: LeaderboardRow[] }) {
         ))}
       </div>
 
-      <table className="w-full text-left text-sm">
+      <div className="card overflow-x-auto">
+      <table className="tabular w-full min-w-[34rem] text-left text-sm">
         <thead>
-          <tr className="border-b border-black/10 dark:border-white/10">
-            <th className="py-2 font-medium">#</th>
-            <th className="py-2 font-medium">Player</th>
-            <th className="py-2 font-medium">Net profit</th>
-            <th className="py-2 font-medium">ROI %</th>
-            <th className="py-2 font-medium">Avg / session</th>
-            <th className="py-2 font-medium">Sessions</th>
+          <tr className="border-b border-line text-xs uppercase tracking-wider text-subtle">
+            <th className="px-4 py-3 font-medium">#</th>
+            <th className="px-4 py-3 font-medium">Player</th>
+            <th className="px-4 py-3 font-medium">Net profit</th>
+            <th className="px-4 py-3 font-medium">ROI %</th>
+            <th className="px-4 py-3 font-medium">Avg / session</th>
+            <th className="px-4 py-3 font-medium">Sessions</th>
           </tr>
         </thead>
         <tbody>
           {sorted.map((row, i) => (
-            <tr key={row.key} className="border-b border-black/10 dark:border-white/10">
-              <td className="py-2 text-black/50 dark:text-white/50">{i + 1}</td>
-              <td className="py-2">
+            <tr key={row.key} className="border-b border-line last:border-0 hover:bg-white/[0.03]">
+              <td className={`px-4 py-3 font-semibold ${i < 3 ? "text-accent" : "text-subtle"}`}>{i + 1}</td>
+              <td className="px-4 py-3 font-medium">
                 {row.displayName}
                 {row.isGuest && (
-                  <span className="ml-1 text-xs text-black/40 dark:text-white/40">(guest)</span>
+                  <span className="ml-1 text-xs text-subtle">(guest)</span>
                 )}
                 {row.streak.type === "hot" && (
-                  <span className="ml-2 text-xs text-orange-500">
+                  <span className="ml-2 text-xs text-orange-400">
                     🔥 {row.streak.length}
                   </span>
                 )}
                 {row.streak.type === "cold" && (
-                  <span className="ml-2 text-xs text-blue-500">
+                  <span className="ml-2 text-xs text-sky-400">
                     ❄️ {row.streak.length}
                   </span>
                 )}
@@ -71,20 +72,21 @@ export function LeaderboardTable({ rows }: { rows: LeaderboardRow[] }) {
               <td
                 className={
                   row.netProfit >= 0
-                    ? "py-2 text-green-600"
-                    : "py-2 text-red-600"
+                    ? "px-4 py-3 font-medium text-success"
+                    : "px-4 py-3 font-medium text-danger"
                 }
               >
                 {row.netProfit >= 0 ? "+" : ""}
                 {formatUSD(row.netProfit)}
               </td>
-              <td className="py-2">{row.roiPercent.toFixed(1)}%</td>
-              <td className="py-2">{formatUSD(row.avgPerSession)}</td>
-              <td className="py-2">{row.sessionsPlayed}</td>
+              <td className="px-4 py-3 text-muted">{row.roiPercent.toFixed(1)}%</td>
+              <td className="px-4 py-3 text-muted">{formatUSD(row.avgPerSession)}</td>
+              <td className="px-4 py-3 text-muted">{row.sessionsPlayed}</td>
             </tr>
           ))}
         </tbody>
       </table>
+      </div>
     </div>
   );
 }

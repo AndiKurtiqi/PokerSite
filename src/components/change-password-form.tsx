@@ -49,7 +49,7 @@ export function ChangePasswordForm() {
           required
           value={currentPassword}
           onChange={(e) => setCurrentPassword(e.target.value)}
-          className="rounded border border-black/20 px-3 py-2 dark:border-white/20"
+          className="px-3 py-2 input"
         />
       </label>
 
@@ -61,7 +61,7 @@ export function ChangePasswordForm() {
           minLength={8}
           value={newPassword}
           onChange={(e) => setNewPassword(e.target.value)}
-          className="rounded border border-black/20 px-3 py-2 dark:border-white/20"
+          className="px-3 py-2 input"
         />
       </label>
 
@@ -73,17 +73,17 @@ export function ChangePasswordForm() {
           minLength={8}
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
-          className="rounded border border-black/20 px-3 py-2 dark:border-white/20"
+          className="px-3 py-2 input"
         />
       </label>
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
-      {success && <p className="text-sm text-green-600">Password updated.</p>}
+      {error && <p className="text-sm text-danger">{error}</p>}
+      {success && <p className="text-sm text-success">Password updated.</p>}
 
       <button
         type="submit"
         disabled={loading}
-        className="self-start rounded bg-black px-4 py-2 text-sm text-white disabled:opacity-50 dark:bg-white dark:text-black"
+        className="self-start px-4 py-2 text-sm disabled:opacity-50 btn-primary"
       >
         {loading ? "Saving..." : "Change password"}
       </button>

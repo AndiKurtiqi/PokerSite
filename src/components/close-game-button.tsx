@@ -79,14 +79,14 @@ export function CloseGameButton({
       <button
         type="button"
         onClick={openModal}
-        className="rounded bg-black px-4 py-2 text-sm text-white dark:bg-white dark:text-black"
+        className="px-4 py-2 text-sm btn-primary"
       >
         Close game
       </button>
 
       {open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="flex w-full max-w-md flex-col gap-4 rounded bg-white p-6 dark:bg-zinc-900">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 p-4">
+          <div className="popover flex w-full max-w-md flex-col gap-4 rounded-2xl p-6">
             <h2 className="text-lg font-semibold">Close out everyone</h2>
 
             <div className="flex max-h-80 flex-col gap-3 overflow-y-auto">
@@ -94,7 +94,7 @@ export function CloseGameButton({
                 <label key={p.id} className="flex items-center justify-between gap-3 text-sm">
                   <span>
                     {p.name}{" "}
-                    <span className="text-black/50 dark:text-white/50">
+                    <span className="text-subtle">
                       (bought in {formatUSD(p.totalBoughtIn)})
                     </span>
                   </span>
@@ -108,13 +108,13 @@ export function CloseGameButton({
                       setAmounts((prev) => ({ ...prev, [p.id]: e.target.value }))
                     }
                     placeholder="Amount ($)"
-                    className="w-28 rounded border border-black/20 px-2 py-1 dark:border-white/20"
+                    className="w-28 px-2 py-1 input"
                   />
                 </label>
               ))}
             </div>
 
-            <div className="flex items-center justify-between border-t border-black/10 pt-3 text-sm dark:border-white/10">
+            <div className="flex items-center justify-between border-t pt-3 text-sm border-line">
               <span>Bought in: {formatUSD(totalBoughtIn)}</span>
               <span>
                 Cashed out: {formatUSD(totalCashedOut)}
@@ -128,13 +128,13 @@ export function CloseGameButton({
               </span>
             </div>
 
-            {error && <p className="text-sm text-red-600">{error}</p>}
+            {error && <p className="text-sm text-danger">{error}</p>}
 
             <div className="flex justify-end gap-2">
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="rounded border border-black/20 px-4 py-2 text-sm dark:border-white/20"
+                className="px-4 py-2 text-sm btn-secondary"
               >
                 Cancel
               </button>
@@ -142,7 +142,7 @@ export function CloseGameButton({
                 type="button"
                 disabled={loading || !allFilled}
                 onClick={confirmClose}
-                className="rounded bg-black px-4 py-2 text-sm text-white disabled:opacity-50 dark:bg-white dark:text-black"
+                className="px-4 py-2 text-sm disabled:opacity-50 btn-primary"
               >
                 {loading ? "Closing..." : "Confirm & close"}
               </button>

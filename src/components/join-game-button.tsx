@@ -45,7 +45,7 @@ export function JoinGameButton({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="rounded bg-black px-4 py-2 text-sm text-white dark:bg-white dark:text-black"
+        className="px-4 py-2 text-sm btn-primary"
       >
         Join game
       </button>
@@ -62,18 +62,18 @@ export function JoinGameButton({
           autoFocus
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
-          className="w-28 rounded border border-black/20 px-2 py-1 text-sm dark:border-white/20"
+          className="w-28 px-2 py-1 text-sm input"
         />
         <button
           type="button"
           disabled={loading}
           onClick={join}
-          className="rounded bg-black px-3 py-1 text-sm text-white disabled:opacity-50 dark:bg-white dark:text-black"
+          className="px-3 py-1 text-sm disabled:opacity-50 btn-primary"
         >
           {loading ? "Joining..." : "Confirm"}
         </button>
       </div>
-      {error && <p className="max-w-xs text-right text-sm text-red-600">{error}</p>}
+      {error && <p className="max-w-xs text-right text-sm text-danger">{error}</p>}
     </div>
   );
 }

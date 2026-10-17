@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { AuthShell } from "@/components/auth-shell";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -35,32 +36,39 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-sm flex-col justify-center gap-6 px-4">
-      <h1 className="text-2xl font-semibold">Create an account</h1>
-      <p className="text-sm text-black/60 dark:text-white/60">
-        New accounts need to be approved by an admin before you can log in.
-      </p>
+    <AuthShell
+      title="Create an account"
+      subtitle="New accounts need to be approved by an admin before you can log in."
+      footer={
+        <>
+          Already have an account?{" "}
+          <Link href="/login" className="text-accent underline-offset-4 hover:underline">
+            Log in
+          </Link>
+        </>
+      }
+    >
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <label className="flex flex-col gap-1 text-sm">
+        <label className="flex flex-col gap-1.5 text-sm font-medium">
           Name
           <input
             required
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
-            className="rounded border border-black/20 px-3 py-2 dark:border-white/20"
+            className="input px-3 py-2.5 font-normal"
           />
         </label>
-        <label className="flex flex-col gap-1 text-sm">
+        <label className="flex flex-col gap-1.5 text-sm font-medium">
           Email
           <input
             type="email"
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="rounded border border-black/20 px-3 py-2 dark:border-white/20"
+            className="input px-3 py-2.5 font-normal"
           />
         </label>
-        <label className="flex flex-col gap-1 text-sm">
+        <label className="flex flex-col gap-1.5 text-sm font-medium">
           Password
           <input
             type="password"
@@ -68,24 +76,18 @@ export default function SignupPage() {
             minLength={8}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="rounded border border-black/20 px-3 py-2 dark:border-white/20"
+            className="input px-3 py-2.5 font-normal"
           />
         </label>
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && <p className="text-sm text-danger">{error}</p>}
         <button
           type="submit"
           disabled={loading}
-          className="rounded bg-black px-4 py-2 text-white disabled:opacity-50 dark:bg-white dark:text-black"
+          className="btn-primary px-4 py-2.5"
         >
           {loading ? "Submitting..." : "Request account"}
         </button>
       </form>
-      <p className="text-sm">
-        Already have an account?{" "}
-        <Link href="/login" className="underline">
-          Log in
-        </Link>
-      </p>
-    </div>
+    </AuthShell>
   );
 }

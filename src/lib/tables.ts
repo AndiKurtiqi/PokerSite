@@ -16,10 +16,16 @@ export function pickAvailableTable(countsByTable: Map<number, number>): number {
   return table;
 }
 
+/**
+ * Players who have cashed out have left the table, so only players still in
+ * the game take up a seat.
+ */
+export const STILL_SEATED = { leftAt: null } as const;
+
 /** Looks up current per-table occupancy for a game and picks the first table with room. */
 export async function getNextAvailableTable(gameId: string): Promise<number> {
   const participants = await prisma.gameParticipant.findMany({
-    where: { gameId },
+    where: { gameId, ...STILL_SEATED },
     select: { tableNumber: true },
   });
   const counts = new Map<number, number>();

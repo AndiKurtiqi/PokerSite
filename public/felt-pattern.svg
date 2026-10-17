@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="140" height="140" viewBox="0 0 140 140">
+  <defs>
+    <path id="spade" d="M12 1C5 8 2 12 2 15.500A4.700 4.700 0 0 0 11.200 17C11 19.500 10 21.300 8 23H16C14 21.300 13 19.500 12.800 17A4.700 4.700 0 0 0 22 15.500C22 12 19 8 12 1Z"/>
+    <path id="heart" d="M12 22.500C5 16.500 2 12 2 8A5 5 0 0 1 12 6.200A5 5 0 0 1 22 8C22 12 19 16.500 12 22.500Z"/>
+    <path id="diamond" d="M12 1L20.500 12L12 23L3.500 12Z"/>
+    <g id="club">
+      <circle cx="12" cy="7.500" r="5"/><circle cx="6.500" cy="14.500" r="5"/><circle cx="17.500" cy="14.500" r="5"/>
+      <path d="M12 12C12 17.500 11 20.500 8.500 23H15.500C13 20.500 12 17.500 12 12Z"/>
+    </g>
+  </defs>
+  <g fill="#000" fill-opacity="0.16">
+    <use href="#spade" transform="translate(21 17) scale(1.25)"/>
+    <use href="#heart" transform="translate(91 17) scale(1.25)"/>
+    <use href="#diamond" transform="translate(56 87) scale(1.25)"/>
+    <use href="#club" transform="translate(-14 87) scale(1.25)"/>
+    <use href="#club" transform="translate(126 87) scale(1.25)"/>
+  </g>
+  <g stroke="#fff" stroke-opacity="0.05" stroke-width="1" fill="none">
+    <path d="M0 70L70 0L140 70L70 140Z"/>
+  </g>
+</svg>

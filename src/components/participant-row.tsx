@@ -87,17 +87,20 @@ export function ParticipantRow({
   }
 
   return (
-    <div className="flex flex-col gap-2 border-b border-black/10 py-3 last:border-0 dark:border-white/10">
-      <div className="flex items-center justify-between">
+    <div
+      data-testid="participant-row"
+      className="flex flex-col gap-2 border-b py-3 last:border-0 border-line"
+    >
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <p className="font-medium">{name}</p>
-          <p className="text-sm text-black/60 dark:text-white/60">
+          <p className={`font-medium ${totalCashedOut !== null ? "text-muted" : ""}`}>{name}</p>
+          <p className="text-sm text-muted">
             Bought in: {formatUSD(totalBoughtIn)}
             {totalCashedOut !== null && <> · Cashed out: {formatUSD(totalCashedOut)}</>}
             {net !== null && (
               <>
                 {" · "}
-                <span className={net >= 0 ? "text-green-600" : "text-red-600"}>
+                <span className={net >= 0 ? "text-success" : "text-danger"}>
                   {net >= 0 ? "+" : ""}
                   {formatUSD(net)}
                 </span>
@@ -112,7 +115,7 @@ export function ParticipantRow({
               value={tableNumber}
               disabled={movingTable}
               onChange={(e) => moveTable(Number(e.target.value))}
-              className="rounded border border-black/20 px-2 py-1 text-sm disabled:opacity-50 dark:border-white/20 dark:bg-zinc-900"
+              className="px-2 py-1 text-sm disabled:opacity-50 input"
             >
               {tableOptions.map((t) => (
                 <option key={t} value={t}>
@@ -127,14 +130,14 @@ export function ParticipantRow({
               <button
                 type="button"
                 onClick={() => setMode(mode === "rebuy" ? null : "rebuy")}
-                className="rounded border border-black/20 px-3 py-1 text-sm dark:border-white/20"
+                className="px-3 py-1 text-sm btn-secondary"
               >
                 Rebuy
               </button>
               <button
                 type="button"
                 onClick={() => setMode(mode === "cashout" ? null : "cashout")}
-                className="rounded bg-black px-3 py-1 text-sm text-white dark:bg-white dark:text-black"
+                className="px-3 py-1 text-sm btn-primary"
               >
                 Cash out
               </button>
@@ -143,7 +146,7 @@ export function ParticipantRow({
         </div>
       </div>
 
-      {tableError && <p className="text-sm text-red-600">{tableError}</p>}
+      {tableError && <p className="text-sm text-danger">{tableError}</p>}
 
       {mode && (
         <div className="flex items-center gap-2">
@@ -155,17 +158,17 @@ export function ParticipantRow({
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             placeholder="Amount ($)"
-            className="w-32 rounded border border-black/20 px-2 py-1 text-sm dark:border-white/20"
+            className="w-32 px-2 py-1 text-sm input"
           />
           <button
             type="button"
             disabled={loading}
             onClick={() => submit(mode === "rebuy" ? "REBUY" : "CASH_OUT")}
-            className="rounded bg-black px-3 py-1 text-sm text-white disabled:opacity-50 dark:bg-white dark:text-black"
+            className="px-3 py-1 text-sm disabled:opacity-50 btn-primary"
           >
             {loading ? "Saving..." : "Confirm"}
           </button>
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && <p className="text-sm text-danger">{error}</p>}
         </div>
       )}
     </div>

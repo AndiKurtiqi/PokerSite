@@ -75,14 +75,14 @@ export function NewGameForm({
           required
           value={buyIn}
           onChange={(e) => setBuyIn(e.target.value)}
-          className="rounded border border-black/20 px-3 py-2 dark:border-white/20"
+          className="px-3 py-2 input"
         />
       </label>
 
       <label className="flex flex-col gap-1 text-sm">
         Chip set
         {chipSets.length === 0 ? (
-          <p className="text-black/60 dark:text-white/60">
+          <p className="text-muted">
             No chip sets yet.{" "}
             <Link href="/chip-sets/new" className="underline">
               Create one
@@ -93,7 +93,7 @@ export function NewGameForm({
           <select
             value={chipSetId}
             onChange={(e) => setChipSetId(e.target.value)}
-            className="rounded border border-black/20 px-3 py-2 dark:border-white/20"
+            className="px-3 py-2 input"
           >
             {chipSets.map((set) => (
               <option key={set.id} value={set.id}>
@@ -109,12 +109,12 @@ export function NewGameForm({
         <PlayerPicker selected={players} onChange={setPlayers} />
       </div>
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm text-danger">{error}</p>}
 
       <button
         type="submit"
         disabled={loading}
-        className="self-start rounded bg-black px-4 py-2 text-sm text-white disabled:opacity-50 dark:bg-white dark:text-black"
+        className="self-start px-4 py-2 text-sm disabled:opacity-50 btn-primary"
       >
         {loading ? "Creating..." : "Create game"}
       </button>
