@@ -3,20 +3,23 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { formatUSD } from "@/lib/money";
 import { getLeaderboardRows } from "@/lib/get-leaderboard-rows";
+import { rankLeaderboard } from "@/lib/leaderboard";
 import { LeaderboardTable } from "@/components/leaderboard-table";
 
 function StatCard({
   label,
   value,
   tone = "neutral",
+  testId,
 }: {
+  testId?: string;
   label: string;
   value: string;
   tone?: "neutral" | "good" | "bad";
 }) {
   const color = tone === "good" ? "text-success" : tone === "bad" ? "text-danger" : "text-foreground";
   return (
-    <div className="card flex flex-col gap-1 p-4">
+    <div data-testid={testId} className="card flex flex-col gap-1 p-4">
       <span className="section-label">{label}</span>
       <span className={`tabular text-2xl font-semibold tracking-tight ${color}`}>{value}</span>
     </div>
@@ -34,8 +37,8 @@ export default async function DashboardPage() {
     }),
   ]);
 
-  const myIndex = rows.findIndex((r) => r.key === `user:${session?.user.id}`);
-  const mine = myIndex >= 0 ? rows[myIndex] : null;
+  // Same ranking the table below uses by default, so the two always agree.
+  const mine = rankLeaderboard(rows, "netProfit").find((r) => r.key === `user:${session?.user.id}`) ?? null;
   const net = mine?.netProfit ?? 0;
 
   return (
@@ -77,7 +80,7 @@ export default async function DashboardPage() {
           tone={net > 0 ? "good" : net < 0 ? "bad" : "neutral"}
         />
         <StatCard label="Sessions" value={mine ? String(mine.sessionsPlayed) : "0"} />
-        <StatCard label="Rank" value={mine ? `#${myIndex + 1} of ${rows.length}` : "—"} />
+        <StatCard testId="rank-card" label="Rank" value={mine ? `#${mine.rank} of ${rows.length}${mine.tied ? " (tied)" : ""}` : "—"} />
         <StatCard
           label="Avg / session"
           value={mine ? formatUSD(mine.avgPerSession) : "—"}
